@@ -1,0 +1,125 @@
+between () is the mapping from the scryfall data
+and if possible the original data type
+for unknow datatype (ex number of char), just explore data manually and add extra margin for safety
+
+the inserts must follow the order define here as the dependencies table comes first
+
+Data_date (https://api.scryfall.com/bulk-data)
+    updated_at DATETIME (.updated_at)
+
+
+Symbol (https://api.scryfall.com/symbology)
+    code (symbol.symbol, str) PK, VARCHAR(20)
+    name (symbol.english, str), VARCHAR(100)
+    isFunny (symbol.funny, bool)
+    isMana (symbol.represents_mana, bool)
+    icon_url (symbol.svg_uri, represents_mana) NULL, VARCHAR(150)
+    cmc (symbol.cmc) Decimal (x,1) NULL
+        it seems the max is 1000000
+
+Color (no api, just doc https://scryfall.com/docs/api/colors, maybe parsing the doc is the solution :|)
+    code (color.abbr), VARCHAR(1) PK
+    name (color.color) VARCHAR(20)
+    ----- notes about magic rules, theres no incolour color :| althouth incolor mana exists
+        we can retrieve "incolor" land for exemple with Card_Produced_mana
+
+Symbol_Color (https://api.scryfall.com/symbology, use for symbols like {B/G})
+    symbol_id (symbol.colors), PK FK(Symbol) FK Symbol
+    color_id (symbol.colors), PK FK(Color) FK Color
+
+Keyword (https://api.scryfall.com/catalog/keyword-abilities, https://api.scryfall.com/catalog/keyword-actions)
+    name (api here are just list of value) PK, VARCHAR(50)
+    isAbility (check where the item comes from basically)
+    isAction (bis)
+
+Layout (no api just doc https://scryfall.com/docs/api/layouts, maybe parsing the doc is the solution :|)
+    code (layout.layout), PK, VARCHAR(50)
+    name (layout.layout with captitalisation and replace("_", " ")) VARCHAR(50)
+    description (layout.description) VARCHAR(150)
+
+Set_type (no api just docs from https://scryfall.com/docs/api/sets, maybe parsing the doc is the solution :|)
+    code (set types.type), PK VARCHAR(50)
+    name (set types.type with captitalisation and replace("_", " ")) VARCHAR(50)
+    description (set types.description) VARCHAR(150)
+
+Set (https://api.scryfall.com/sets)
+	name (set.name) VARCHAR(100)
+	set_type_id (set.set_type) FK Set_type
+	code (set.code) VARCHAR(10)
+	released_date (set.released_at, format YYYY-MM-DD) Date (GMT-8 Pacific time) NULL
+
+
+Artist (https://api.scryfall.com/catalog/artist-names)
+    name (list of values) PK, VARCHAR(100)
+
+
+Legality_type (no api, have to get distinct values from cards: https://scryfall.com/docs/api/cards)
+    name (card.legalities.keys()), VARCHAR(20)
+    description (manually i guess :| ), VARCHAR(150)
+
+Legality_value (no api, have to get distinct values from cards: https://scryfall.com/docs/api/cards)
+    name (card.legalities.values()), VARCHAR(20)
+    description (manually i guess :| ), VARCHAR(150)
+
+Rarity (no api, have to get distinct values from cards: https://scryfall.com/docs/api/cards)
+    name (card.rarity), VARCHAR(20)
+    description (manually i guess :| ), VARCHAR(150)
+
+
+Card (inside bulk data)
+    idScryfall (card.id) UUID (VARCHAR(36))
+        Scryfall Id
+    layout_id (card.layout) FK Layout
+    rarity_id (card.rarity) FK Rarity
+    set_id FK (card.set) FK Set
+    idOracle (card.oracle_id) UUID (VARCHAR(36))
+        ne change pas pour les rééditions
+        does not change with reeditions
+        but can be uniq for cards sharing the same name (eg tokens)
+    idArena (card.arena_id) INT NULL
+    // lang (card.lang) VARCHAR(2)
+    released_date (card.released_at, format YYYY-MM-DD) NULL (if set has no release date or id release date of the set is different, then get the value from card else NULL)
+
+Card_Color_identity
+    card_id
+    color_id (card.color) FK Color
+        a face or card can have no color attached, eg eldrazi
+
+Card_Produced_mana
+    card_id
+    color_id (card.produced_mana) FK Color
+
+Card_Keyword
+    card_id
+    keyword_id (card.keywords) FK Keyword
+
+Card_Related
+    card_id
+    related_card_id (card.all_parts) FK Card
+
+Card_Legality
+    card_id
+    legality_type_id (card.legalities.keys()) FK Legality_type
+    legality_value_id (card.legalities.values()) FK Legality_value
+
+Face
+    card_id, PK, FK
+    index (calculated ^^, starting from 1), PK
+    artist_id (card.face.artist) NULL FK Artist
+    image_url (card.face.image_uris.normal OR card.image_uris.normal) NULL VARCHAR(200)
+    name (card.face.name) VARCHAR(100)
+    type_line (card.face.type_line) VARCHAR(50)
+    oracle_text (card.face.oracle_text) NULL VARCHAR(2000)
+    printed_text (card.face.printed_text) NULL VARCHAR(2000)
+    power (card.face.power) NULL VARCHAR(5)
+    toughness (card.face.toughness) NULL VARCHAR(5)
+
+Face_Color
+    face_id FK Face
+    color_id (card.face.color OR card.color)
+
+Face_ManaCost
+    face_id FK Face
+    symbol_id (card.face.mana_cost OR card.mana_cost splitted! how to do the split???)
+        note: scryfall can return "" for the mana cost, it obviously must be ignored in that case
+

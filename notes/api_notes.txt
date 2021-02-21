@@ -1,0 +1,104 @@
+full cards all languages
+
+https://scryfall.com/docs/api/bulk-data
+
+
+recup des bulks en cours
+https://api.scryfall.com/bulk-data
+type == "oracle_cards"
+.download_uri
+.updated_at
+
+
+
+modèle:
+
+Card
+https://scryfall.com/docs/api/cards
+	META
+		id UUID
+			Scryfall Id
+		oracle_id UUID
+			ne change pas pour les rééditions
+			mais peut etre unique pour des cartes avec le mm nom (ex tokens)
+		lang varchar(2)
+		arena_id int NULL
+
+	GAMEPLAY
+		related_cards (all_parts) [Card] NULL
+		card_faces [Faces] NULL
+			pour les cartes mono face, le tableau est vide
+		cmc Decimal(x, 1)
+			pour les cartes multi face, c'est la somme du cmc de toutes les faces
+		color_identity [Color]
+			peut etre défini au niveau de la face de la carte!
+		color
+			la couleur du cout
+			ne pas prendre si défini niveau Face
+		produced_mana [Color]
+			liste des couleurs produite par la carte
+		keywords [Keyword] NULL
+		layout Layout
+		legalities [Legality]: {context: value}
+		mana_cost [Symbol]
+			peut etre "" ou = 0 (un terrain sera vide, une carte qui coute 0 sera à 0)
+			peut etre au niveau des faces!
+		name
+			nom de la carte
+			il faudra aussi bien prendre le nom niveau face car les noms sont join par //
+		oracle_text
+			texte oracle (texte comme si la carte était sortie ajd en prennant en compte les nouvelles règles et tout)
+		power varchar() NULL
+		toughness varchar() NULL
+		type_line
+			la ligne type (avec toutes les infos mélangées, si possible à tej pour mettre niveau face????)
+			le séparateur est — à voir si c'est parsable
+
+	PRINT
+		artist NULL
+			à afficher pour des raisons de légalité
+		image_uris["normal"]
+			attention certaines cartes n'ont pas d'images
+			aussi il semblerait que les cartes à deux coté les images sont sur l'obj face
+		printed_text
+			le texte imprimé physiquement sur la carte (potentiellement diff du texte oracle)
+		rarity Rarity
+		released_at Date
+		set_name Set
+
+FACE
+	cardId
+	colors [Color] null
+		les couleurs du cout en mana de la carte
+	image_uris
+		récupérer uniquement si pas chopé niveau carte!
+	mana_cost
+		peut etre différent du cout de la carte
+	name
+		oracle_text
+	power
+	toughness
+	type_line
+
+
+Keywords
+	https://scryfall.com/docs/api/catalogs/keyword-abilities
+	https://scryfall.com/docs/api/catalogs/keyword-actions
+
+Color
+https://scryfall.com/docs/api/colors
+	code
+	name
+	symbol
+
+Symbol
+	https://scryfall.com/docs/api/card-symbols
+	attention il y a pas de lien direct avec les cartes à part via mana_cost
+	donc faudrait parser le bousin
+
+Set
+	https://scryfall.com/docs/api/sets
+	name ()
+	type (set_type)
+	code varcar(10)
+	released_at Date (GMT-8 Pacific time)

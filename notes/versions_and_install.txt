@@ -1,0 +1,21 @@
+PHP 7.4.14 NTS
+Symfony 5.2.3
+
+install dependencies
+cd to project
+composer install
+or composer update
+
+in dev mode it neeeds sqlite3
+le lib is here with php 7.4 but its not activated in php.ini
+uncomment the following lines:
+extension=pdo_sqlite
+extension=sqlite3
+
+
+create db with
+php bin/console doctrine:database:create
+
+and schema with
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
