@@ -8,11 +8,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use App\Service\Scryfall;
 
-class ScryfallUpdate extends Command
+class ScryfallSchema extends Command
 {
 
     private Scryfall $scryfallService;
-    protected static $defaultName = "scryfall:update";
+    protected static $defaultName = "scryfall:schema";
 
     public function __construct(Scryfall $scryfallService)
     {
@@ -23,14 +23,13 @@ class ScryfallUpdate extends Command
     protected function configure()
     {
         $this
-            ->setDescription("Update Data using Scryfall API")
+            ->setDescription("get scryfall schema from doc")
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // $output->writeln( print_r( $this->scryfallService->updateData("oracle_cards") ) );
-        $this->scryfallService->updateCardDependenciesData();
+        $output->writeln(print_r($this->scryfallService->getCardSchemaFromDoc()));
         return Command::SUCCESS;
     }
 }

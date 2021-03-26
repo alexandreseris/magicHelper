@@ -28,6 +28,11 @@ class Rarity
      */
     private $cards;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $indexValue;
+
     public function __construct()
     {
         $this->cards = new ArrayCollection();
@@ -83,6 +88,18 @@ class Rarity
                 $card->setRarity(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getIndexValue(): ?int
+    {
+        return $this->indexValue;
+    }
+
+    public function setIndexValue(?int $indexValue): self
+    {
+        $this->indexValue = $indexValue;
 
         return $this;
     }
