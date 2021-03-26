@@ -14,24 +14,20 @@ class CardLegality
 {
     /**
      * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
-
-    /**
      * @ORM\ManyToOne(targetEntity=Card::class, inversedBy="legalities")
      * @ORM\JoinColumn(nullable=false, name="card_id", referencedColumnName="idScryfall")
      */
     private $card;
 
     /**
+     * @ORM\Id
      * @ORM\ManyToOne(targetEntity=LegalityType::class)
      * @ORM\JoinColumn(nullable=false, name="legalityType_id", referencedColumnName="name")
      */
     private $legality_type;
 
     /**
+     * @ORM\Id
      * @ORM\ManyToOne(targetEntity=LegalityValue::class)
      * @ORM\JoinColumn(nullable=false, name="legalityValue_id", referencedColumnName="name")
      */

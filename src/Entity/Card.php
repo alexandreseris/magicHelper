@@ -53,7 +53,7 @@ class Card
 
     /**
      * @ORM\ManyToMany(targetEntity=Color::class)
-     * @ORM\JoinTable(name="Card_ColorIdentity",
+     * @ORM\JoinTable(name="card_colorIdentity",
      *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="color_id", referencedColumnName="code")}
      * )
@@ -62,7 +62,7 @@ class Card
 
     /**
      * @ORM\ManyToMany(targetEntity=Color::class)
-     * @ORM\JoinTable(name="Card_ProducedMana",
+     * @ORM\JoinTable(name="card_producedMana",
      *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="color_id", referencedColumnName="code")}
      * )
@@ -71,7 +71,7 @@ class Card
 
     /**
      * @ORM\ManyToMany(targetEntity=Keyword::class, inversedBy="cards")
-     * @ORM\JoinTable(name="Card_Keyword",
+     * @ORM\JoinTable(name="card_keyword",
      *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="keyword_id", referencedColumnName="name")}
      * )
@@ -80,7 +80,7 @@ class Card
 
     /**
      * @ORM\ManyToMany(targetEntity=Card::class)
-     * @ORM\JoinTable(name="Card_Related",
+     * @ORM\JoinTable(name="card_related",
      *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="relatedCard_id", referencedColumnName="idScryfall")}
      * )

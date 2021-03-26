@@ -291,14 +291,6 @@ class Scryfall
         $this->entityManager->flush();
         sleep(self::$waitSecondsBetweenCalls);
 
-        foreach ($this->getArtistData() as $artistData) {
-            $artist = new \App\Entity\Artist();
-            $artist->setName($artistData[0]);
-            $this->entityManager->persist($artist);
-        }
-        $this->entityManager->flush();
-        sleep(self::$waitSecondsBetweenCalls);
-
         foreach ($this->getLayoutData() as $layoutData) {
             $layout = new \App\Entity\Layout();
             $layout->setCode($layoutData[0]);
@@ -309,17 +301,25 @@ class Scryfall
         $this->entityManager->flush();
         sleep(self::$waitSecondsBetweenCalls);
 
+        foreach ($this->getArtistData() as $artistData) {
+            $artist = new \App\Entity\Artist();
+            $artist->setName($artistData);
+            $this->entityManager->persist($artist);
+        }
+        $this->entityManager->flush();
+        sleep(self::$waitSecondsBetweenCalls);
+
         $keywoards = $this->getKeywordData();
-        foreach ($keywoards["abilities"] as $keywoard) {
+        foreach ($keywoards["abilities"] as $keywoardData) {
             $keywoard = new \App\Entity\Keyword();
-            $keywoard->setName($keywoard[0]);
+            $keywoard->setName($keywoardData);
             $keywoard->setIsAbility(true);
             $keywoard->setIsAction(false);
             $this->entityManager->persist($keywoard);
         }
         foreach ($keywoards["actions"] as $keywoard) {
             $keywoard = new \App\Entity\Keyword();
-            $keywoard->setName($keywoard[0]);
+            $keywoard->setName($keywoardData);
             $keywoard->setIsAbility(false);
             $keywoard->setIsAction(true);
             $this->entityManager->persist($keywoard);

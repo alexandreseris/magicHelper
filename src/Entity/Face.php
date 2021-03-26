@@ -68,7 +68,7 @@ class Face
 
     /**
      * @ORM\ManyToMany(targetEntity=Color::class)
-     * @ORM\JoinTable(name="Face_Color",
+     * @ORM\JoinTable(name="face_color",
      *   joinColumns={
      *     @ORM\JoinColumn(name="card_id", referencedColumnName="card_id"),
      *     @ORM\JoinColumn(name="face_index", referencedColumnName="index")
@@ -82,7 +82,7 @@ class Face
 
     /**
      * @ORM\ManyToMany(targetEntity=Symbol::class)
-     * @ORM\JoinTable(name="Face_ManaCost",
+     * @ORM\JoinTable(name="face_manaCost",
      *   joinColumns={
      *     @ORM\JoinColumn(name="card_id", referencedColumnName="card_id"),
      *     @ORM\JoinColumn(name="face_index", referencedColumnName="index")

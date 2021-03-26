@@ -45,7 +45,7 @@ class Symbol
 
     /**
      * @ORM\ManyToMany(targetEntity=Color::class, inversedBy="symbols")
-     * @ORM\JoinTable(name="Symbol_Color",
+     * @ORM\JoinTable(name="symbol_color",
      *   joinColumns={@ORM\JoinColumn(name="symbol_id", referencedColumnName="code")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="color_id", referencedColumnName="code")}
      * )
