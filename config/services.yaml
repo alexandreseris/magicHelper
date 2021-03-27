@@ -10,6 +10,14 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            string $scryfallApiUrl: 'https://api.scryfall.com'
+            string $scryfallApiDocumentationUrl: 'https://scryfall.com/docs/api'
+            string $scryfallDateTimeFormat: 'Y-m-d\Th:i:s.vP'
+            string $scryfallDateFormat: 'Y-m-d'
+            int $scryfallWaitSecondsBetweenCalls: 2
+            array $tablesNotScryfall: ['data_date']
+            string $scryfallBulkType: 'oracle_cards'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -30,7 +38,11 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    App\Service\Scryfall:
+    App\Service\ScryfallDataGetter:
         arguments:
             $scryfallTestData: '%kernel.project_dir%/var/scryfallData.json'
+            $scryfallFileDlSkip: '%env(SCRYFALL_FILE_DL_SKIP)%'
+
+    App\Service\ScryfallUpdates:
+        arguments:
             $scryfallFileDlSkip: '%env(SCRYFALL_FILE_DL_SKIP)%'

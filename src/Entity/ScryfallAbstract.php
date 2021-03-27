@@ -4,6 +4,11 @@ namespace App\Entity;
 
 use Exception;
 
+/**
+ * This class and all class inheriting from it are used to ensure control over scryfall schema changes (currently on the card context only)
+ * If a property is added, removed or changed, the update process will throw an exception to inform schema has changed and should be updated
+ * The classes defined this way can be generated with the commande scryfall:schema
+ */
 abstract class ScryfallAbstract {
     public function __construct(array $jsonObj) {
         foreach ($jsonObj as $prop => $value) {
