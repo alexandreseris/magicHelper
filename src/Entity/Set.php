@@ -40,6 +40,16 @@ class Set
      */
     private $cards;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $icon_url;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $icon_local;
+
     public function __construct()
     {
         $this->cards = new ArrayCollection();
@@ -119,6 +129,30 @@ class Set
                 $card->setSet(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getIconUrl(): ?string
+    {
+        return $this->icon_url;
+    }
+
+    public function setIconUrl(string $icon_url): self
+    {
+        $this->icon_url = $icon_url;
+
+        return $this;
+    }
+
+    public function getIconLocal(): ?string
+    {
+        return $this->icon_local;
+    }
+
+    public function setIconLocal(?string $icon_local): self
+    {
+        $this->icon_local = $icon_local;
 
         return $this;
     }

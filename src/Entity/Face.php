@@ -92,6 +92,11 @@ class Face
      */
     private $mana_costs;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $image_local;
+
     public function __construct()
     {
         $this->colors = new ArrayCollection();
@@ -262,6 +267,18 @@ class Face
     public function removeManaCost(Symbol $manaCost): self
     {
         $this->mana_costs->removeElement($manaCost);
+
+        return $this;
+    }
+
+    public function getImageLocal(): ?string
+    {
+        return $this->image_local;
+    }
+
+    public function setImageLocal(?string $image_local): self
+    {
+        $this->image_local = $image_local;
 
         return $this;
     }
