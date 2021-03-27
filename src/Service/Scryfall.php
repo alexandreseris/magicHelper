@@ -12,12 +12,13 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class Scryfall
 {
-    public static string $apiBaseUrl = "https://api.scryfall.com";
-    public static string $apiDocBaseUrl = "https://scryfall.com/docs/api";
+    public static string $apiBaseUrl = 'https://api.scryfall.com';
+    public static string $apiDocBaseUrl = 'https://scryfall.com/docs/api';
 
-    public static string $dateTimeFormat = "Y-m-d\Th:i:s.vP";
-    public static string $dateFormat = "Y-m-d";
+    public static string $dateTimeFormat = 'Y-m-d\\Th:i:s.vP';
+    public static string $dateFormat = 'Y-m-d';
     public static int $waitSecondsBetweenCalls = 2;
+    public static array $tablesNotScryfall = ["data_date"];
 
     private HttpClientInterface $httpclient;
     private Crawler $htmlparser;
@@ -43,48 +44,50 @@ class Scryfall
     /**
      * build properties of card object based on the api documentation.
      * Used manually for updating/creating classes representing card and associated from the scryfall perspective
-     * this methode is not 100% accurate as it depends on the reliability of the scryfall doc. you may need to update classes by yourself :|
+     * this methode is not 100% accurate as it depends on the reliability of the scryfall doc. you may need to update classes by yourself :|.
      */
     public function getCardSchemaFromDoc(): string
     {
         $documentationTypeMapping = [
-            "Integer" => "int",
-            "UUID" => "string",
-            "String" => "string",
-            "Array" => "array",
-            "URI" => "string",
-            "Decimal" => "float",
-            "Colors" => "array",
-            "Boolean" => "bool",
-            "Object" => "array",
-            "Date" => "string"
+            'Integer' => 'int',
+            'UUID' => 'string',
+            'String' => 'string',
+            'Array' => 'array',
+            'URI' => 'string',
+            'Decimal' => 'float',
+            'Colors' => 'array',
+            'Boolean' => 'bool',
+            'Object' => 'array',
+            'Date' => 'string',
         ];
-        $response = $this->httpclient->request("GET", self::$apiDocBaseUrl . "/cards");
+        $response = $this->httpclient->request('GET', self::$apiDocBaseUrl.'/cards');
         $responseContent = $response->getContent();
         /** @var Crawler $crawler */
         $crawler = new $this->htmlparser($responseContent);
-        $mainSection = $crawler->filter(".prose")->eq(0);
-        $dataTableNodes = $mainSection->filter("table tbody"); // properties tables (name, type and nullable)
-        $titleTable = $mainSection->filter("h2")->each( // title of the properties tables
-            function(Crawler $node, $i){
-                return $node->attr("id");
+        $mainSection = $crawler->filter('.prose')->eq(0);
+        $dataTableNodes = $mainSection->filter('table tbody'); // properties tables (name, type and nullable)
+        $titleTable = $mainSection->filter('h2')->each( // title of the properties tables
+            function (Crawler $node, $i) {
+                return $node->attr('id');
             }
         );
         $titleTable = array_slice($titleTable, count($titleTable) - $dataTableNodes->count()); // remove titles with no table attached. Depends on the fact that only the firsts titles have no table bellow
         $dataTable = $dataTableNodes->each(
-            function(Crawler $tableNode, $i) use ($titleTable, $documentationTypeMapping){
-                $propertiesLines = $tableNode->filter("tr")->each(
-                    function(Crawler $lineNode, $i) use ($documentationTypeMapping){
-                        $propertyName = $lineNode->filter("td code")->eq(0)->text();
-                        $propertyType = $lineNode->filter("td")->eq(1)->text();
-                        $propertyNullable = $lineNode->filter("td span")->count();
+            function (Crawler $tableNode, $i) use ($titleTable, $documentationTypeMapping) {
+                $propertiesLines = $tableNode->filter('tr')->each(
+                    function (Crawler $lineNode, $i) use ($documentationTypeMapping) {
+                        $propertyName = $lineNode->filter('td code')->eq(0)->text();
+                        $propertyType = $lineNode->filter('td')->eq(1)->text();
+                        $propertyNullable = $lineNode->filter('td span')->count();
                         $nullable = false;
                         if ($propertyNullable > 0) {
                             $nullable = true;
                         }
+
                         return [$propertyName, $documentationTypeMapping[$propertyType], $nullable];
                     }
                 );
+
                 return [$titleTable[$i], $propertiesLines];
             }
         );
@@ -96,10 +99,10 @@ class Scryfall
                 $propName = $prop[0];
                 $propType = $prop[1];
                 $propNullable = $prop[2];
-                if (str_contains($propName , ".")) {
-                    $newNameProp = explode(".", $propName)[0];
-                    $newProp = [$newNameProp, "array", $propNullable];
-                    if (! in_array($newProp, $props)) {
+                if (str_contains($propName, '.')) {
+                    $newNameProp = explode('.', $propName)[0];
+                    $newProp = [$newNameProp, 'array', $propNullable];
+                    if (!in_array($newProp, $props)) {
                         $props[] = $newProp;
                     }
                     unset($props[array_search($prop, $props)]);
@@ -107,139 +110,180 @@ class Scryfall
             }
             unset($prop);
         }
-        unset($dataType);
-        unset($prop);
-        unset($props);
+        unset($dataType, $prop, $props);
 
-        $strBuild = "";
+        $strBuild = '';
         foreach ($dataTable as $dataType) {
             $typeLib = $dataType[0];
             $props = $dataType[1];
-            $strBuild = $strBuild . "// " . $typeLib . "\n";
+            $strBuild = $strBuild.'// '.$typeLib."\n";
             foreach ($props as $prop) {
                 $propName = $prop[0];
                 $propType = $prop[1];
                 $propNullable = $prop[2];
-                $strBuild = $strBuild . "public ";
+                $strBuild = $strBuild.'public ';
                 if ($propNullable) {
-                    $strBuild = $strBuild . "?";
+                    $strBuild = $strBuild.'?';
                 }
-                $strBuild = $strBuild . $propType . " $" . $propName . ";\n";
+                $strBuild = $strBuild.$propType.' $'.$propName.";\n";
             }
         }
+
         return $strBuild;
     }
 
     /**
-     * utilitaty function used for scrap data from the scryfall api documentation
+     * utilitaty function used for scrap data from the scryfall api documentation.
      */
     private function getDataFromDoc(string $url, int $tableIndex, array $lines): array
     {
-        $response = $this->httpclient->request("GET", $url);
+        $response = $this->httpclient->request('GET', $url);
         $responseContent = $response->getContent();
         /** @var Crawler $crawler */
         $crawler = new $this->htmlparser($responseContent);
-        $data = $crawler->filter(".prose table tbody")->eq($tableIndex)->children("tr")->each(
-            function(Crawler $node, $i) use ($lines)
-            {
+
+        return $crawler->filter('.prose table tbody')->eq($tableIndex)->children('tr')->each(
+            function (Crawler $node, $i) use ($lines) {
                 $lineParsed = [];
                 foreach ($lines as $line) {
                     $columnValue = $node->filter($line[0])->eq($line[1])->text();
                     $lineParsed[] = $columnValue;
                 }
+
                 return $lineParsed;
-        });
-        return $data;
+            }
+        );
     }
 
-
     /**
-     * (api documentation) https://scryfall.com/docs/api/colors
-     * 
+     * (api documentation) https://scryfall.com/docs/api/colors.
+     *
      * return an array of arrays for existings colors with:
      *     abreviation, friendly name and mana symbol.
      */
     private function getColorsData(): array
     {
-        return $this->getDataFromDoc(self::$apiDocBaseUrl . "/colors", 0, [
-            ["td p code", 0], // abreviation
-            ["td p", 1], // friendly name
-            ["td abbr", 0] // mana symbol
+        return $this->getDataFromDoc(self::$apiDocBaseUrl.'/colors', 0, [
+            ['td p code', 0], // abreviation
+            ['td p', 1], // friendly name
+            ['td abbr', 0], // mana symbol
         ]);
     }
 
     /**
-     * (api documentation) https://scryfall.com/docs/api/layouts
-     * 
+     * (api documentation) https://scryfall.com/docs/api/layouts.
+     *
      * return an array of arrays for existings layouts with:
      *     code and description.
      */
     private function getLayoutData(): array
     {
-        return $this->getDataFromDoc(self::$apiDocBaseUrl . "/layouts", 0, [
-            ["td p code", 0], // name/code
-            ["td p", 1] // description
+        return $this->getDataFromDoc(self::$apiDocBaseUrl.'/layouts', 0, [
+            ['td p code', 0], // name/code
+            ['td p', 1], // description
         ]);
     }
 
     /**
-     * (api documentation) https://scryfall.com/docs/api/sets
-     * 
+     * (api documentation) https://scryfall.com/docs/api/sets.
+     *
      * return an array of arrays for existings types of set with:
      *     code and description.
      */
     private function getSet_TypeData(): array
     {
-        return $this->getDataFromDoc(self::$apiDocBaseUrl . "/sets", 1, [
-            ["td p code", 0], // name/code
-            ["td p", 1] // description
+        return $this->getDataFromDoc(self::$apiDocBaseUrl.'/sets', 1, [
+            ['td p code', 0], // name/code
+            ['td p', 1], // description
         ]);
     }
 
     /**
-     * doc: https://scryfall.com/docs/api/card-symbols
+     * doc: https://scryfall.com/docs/api/card-symbols.
      */
-    private function getSymbolData(): array {
-        $response = $this->httpclient->request("GET", self::$apiBaseUrl . "/symbology");
-        return $response->toArray()["data"];
+    private function getSymbolData(): array
+    {
+        $response = $this->httpclient->request('GET', self::$apiBaseUrl.'/symbology');
+
+        return $response->toArray()['data'];
     }
 
     /**
      * doc: https://scryfall.com/docs/api/catalogs/keyword-actions and https://scryfall.com/docs/api/catalogs/keyword-abilities
-     * array with keys beeing the type of keywords (abilities and actions) and values beeing the keywords
+     * return an array with keyword name as key and isAbility, isAction as values
      */
-    private function getKeywordData(): array {
+    private function getKeywordData(): array
+    {
         $mergedData = [];
 
-        $response = $this->httpclient->request("GET", self::$apiBaseUrl . "/catalog/keyword-abilities");
-        $mergedData["abilities"] = $response->toArray()["data"];
+        $response = $this->httpclient->request('GET', self::$apiBaseUrl.'/catalog/keyword-abilities');
+        foreach ($response->toArray()['data'] as $keywordName) {
+            $mergedData[$keywordName] = ["isAbility" => true, "isAction" => false];
+        }
 
-        $response = $this->httpclient->request("GET", self::$apiBaseUrl . "/catalog/keyword-actions");
-        $mergedData["actions"] = $response->toArray()["data"];
+        $response = $this->httpclient->request('GET', self::$apiBaseUrl.'/catalog/keyword-actions');
+        foreach ($response->toArray()['data'] as $actionName) {
+            if (in_array($actionName, $mergedData)) {
+                $mergedData[$actionName] = ["isAbility" => true, "isAction" => true];
+            } else {
+                $mergedData[$actionName] = ["isAbility" => false, "isAction" => true];
+            }
+        }
 
         return $mergedData;
     }
 
     /**
-     * doc: https://scryfall.com/docs/api/sets
+     * doc: https://scryfall.com/docs/api/sets.
      */
-    private function getSetData(): array {
-        $response = $this->httpclient->request("GET", self::$apiBaseUrl . "/sets");
-        return $response->toArray()["data"];
+    private function getSetData(): array
+    {
+        $response = $this->httpclient->request('GET', self::$apiBaseUrl.'/sets');
+
+        return $response->toArray()['data'];
     }
 
     /**
-     * doc: https://scryfall.com/docs/api/catalogs/artist-names
+     * doc: https://scryfall.com/docs/api/catalogs/artist-names.
      */
-    private function getArtistData(): array {
-        $response = $this->httpclient->request("GET", self::$apiBaseUrl . "/catalog/artist-names");
-        return $response->toArray()["data"];
+    private function getArtistData(): array
+    {
+        $response = $this->httpclient->request('GET', self::$apiBaseUrl.'/catalog/artist-names');
+
+        return $response->toArray()['data'];
+    }
+
+    /**
+     * truncate tables containing scryfall data
+     * 
+     * currently I did not found a way to use DQL because of the join tables beeing not accessible this way so it plain sql based
+     */
+    private function truncateTables() {
+        $tables = [];
+        $entityTables = $this->entityManager->getMetadataFactory()->getAllMetadata();
+        foreach ($entityTables as $entityTable) {
+            $tableName = $entityTable->table["name"];
+            if (! in_array($tableName, self::$tablesNotScryfall, true)) {
+                $tables[] = $tableName;
+            }
+            foreach ($entityTable->associationMappings as $associtation => $associtationMeta) {
+                if (key_exists("joinTable", $associtationMeta)) {
+                    $tableAssocationName = $associtationMeta["joinTable"]["name"];
+                    if (! in_array($tableAssocationName, self::$tablesNotScryfall, true)) {
+                        $tables[] = $tableAssocationName;
+                    }
+                }
+            }
+        }
+        foreach ($tables as $table) {
+            $this->entityManager->getConnection()->prepare("DELETE FROM " . $table)->execute();
+        }
     }
 
     /**
      * function which insert the dependencies of the card object in the database
      */
-    public function updateCardDependenciesData() {
+    private function updateCardDependenciesData() {
 
         foreach ($this->getSymbolData() as $symbolData) {
             $symbol = new \App\Entity\Symbol();
@@ -309,19 +353,11 @@ class Scryfall
         $this->entityManager->flush();
         sleep(self::$waitSecondsBetweenCalls);
 
-        $keywoards = $this->getKeywordData();
-        foreach ($keywoards["abilities"] as $keywoardData) {
+        foreach ($this->getKeywordData() as $keywordName => $keywordTypes) {
             $keywoard = new \App\Entity\Keyword();
-            $keywoard->setName($keywoardData);
-            $keywoard->setIsAbility(true);
-            $keywoard->setIsAction(false);
-            $this->entityManager->persist($keywoard);
-        }
-        foreach ($keywoards["actions"] as $keywoard) {
-            $keywoard = new \App\Entity\Keyword();
-            $keywoard->setName($keywoardData);
-            $keywoard->setIsAbility(false);
-            $keywoard->setIsAction(true);
+            $keywoard->setName($keywordName);
+            $keywoard->setIsAbility($keywordTypes["isAbility"]);
+            $keywoard->setIsAction($keywordTypes["isAction"]);
             $this->entityManager->persist($keywoard);
         }
         $this->entityManager->flush();
@@ -366,6 +402,8 @@ class Scryfall
             }
         }
         if ($neddUpdate === true) {
+
+            $this->truncateTables();
             $this->updateCardDependenciesData();
 
             if (! $this->scryfallFileDlSkip === true) {
@@ -430,11 +468,9 @@ class Scryfall
                         $legality_values[] = $legality_value;
                     }
                 }
-                // dependencies of card obj need to be inserted/updated first
-                // entity representing the scryfall data and securing data structures (unknown types, wrong types, etc)
                 $testMappingObj = new \App\Entity\ScryfallCard($data);
-                // repo mapping the scryfall entity with doctrine, picking desired fields
-                // making doctrine update if card present but changed else insert (maybe build in???)
+                // left to do:
+                // repo mapping the scryfall entity with doctrine, picking desired fields, and commiting data
             }
             $this->logger->info("progression: 100%");
 

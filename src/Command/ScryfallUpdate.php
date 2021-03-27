@@ -29,8 +29,7 @@ class ScryfallUpdate extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // $output->writeln( print_r( $this->scryfallService->updateData("oracle_cards") ) );
-        $this->scryfallService->updateCardDependenciesData();
+        $output->writeln( print_r( $this->scryfallService->updateData("oracle_cards") ) );
         return Command::SUCCESS;
     }
 }

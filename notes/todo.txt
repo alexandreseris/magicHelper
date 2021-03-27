@@ -1,48 +1,40 @@
-erreur à gérer sur les lignes déjà existantes:
+notes pour la gestion des lignes déjà existantes.
 
-exception de contrainte d'unicité:
-Doctrine\DBAL\Exception\UniqueConstraintViolationException
+    erreur à gérer sur les lignes déjà existantes:
 
-ATTENTION
-    c'est le flush qui déclenche l'erreur
-    donc soit on flush à chaque ligne => perf de merde avec sqlite par ex
-    soit on s'assure que l'obj existe ou pas avant => double les requetes nécessaires, pas cool
+    exception de contrainte d'unicité:
+    Doctrine\DBAL\Exception\UniqueConstraintViolationException
 
-proto fonction
-prend l'entité en param
+    ATTENTION
+        c'est le flush qui déclenche l'exception, donc pas try catch possible :/
+        donc soit on flush à chaque ligne => perf de merde avec sqlite par ex
+        soit on s'assure que l'obj existe ou pas avant => double les requetes nécessaires, pas cool
 
-requete qui check si l'obj existe
-    si possible récupère les colonnes id depuis l'entité si l'info y est? pour éviter de passer en param les clefs primaires, ça serait giga chiant
-si oui on prend l'obj existant et on lui transvase les props depuis le param
-    est ce que l'obj en dehors de la fonction sera vu en dehors du scope de cette mm fonction
-sinon on persiste l'obj
-    est ce le persist marche bien par référence et est ce que les obj sont passés par référence sinon ça marche point
+    contrainte:
+        le parcours des cartes est très long
+        avec sqlite il vaut mieux commit le moins souvent
+        si suppr des dep de cartes, les FK doivent etre param pour ne rien faire et laisser à null pour éviter les violations de contraintes
 
-sinon
-on sfait pas chier yolo on supprime tout à chaque maj et on réinsère
-à priori pas plus de risque que de faire un update vu que les clefs primaires sont toutes sur des données fonctionnelles (à revérifier!)
+    solutions possibles:
+        soit parcours des données et upsert => ça risque d'etre long
+            au moins une requete de select pour check si obj existe. l'update devrait etre facultatif si les donées ont pas changées
+            à noter que techniquement ça risque d'être chiant
+        soit delete de toutes les données et insert à nouveau
+            ça lock les tables longtemps
+        soit delete au fur et à mesure avant les insertions des différentes entitées
+            pendant la maj les données seront incohérentes
+        soit insert des données dans tables de travail et au dernier moment replace du contenu des tables de prod par les tables de travail
+            extremement relou techniquement je pense
+            coute cher en espace disque à priori
+            le traitement batch est pas le fort de doctrine et là ça y va clairement
 
-cf aussi pour faire des bulk insert avec doctrine, comment faire notamment au niveau de la gestion de la mémoire?
-100 lignes par 100 lignes c'est pas mal apparemment
-sinon plus adapté, DBAL
-
-dans tous les cas surtout pas de logger pour les chargement batch :p
-
-pour la suppression en masse voir pour utiliser le sql doctrine DQL
-$q = $em->createQuery('delete from MyProject\Model\Manager m where m.salary > 100000');
-$numDeleted = $q->execute();
-
-$tables = $em->getConnection()->getSchemaManager()->listTables();
-$namespaces = $em->getConfiguration()->getEntityNamespaces();
-ou mieux apparemment
-
-$entities = array();
-$em = $this->getDoctrine()->getManager();
-$meta = $em->getMetadataFactory()->getAllMetadata();
-foreach ($meta as $m) {
-    $entities[] = $m->getName();
-}
-
-
-attention ne pas utiliser de truncate table car la commande auto commit même dans une transaction
-utiliser delete à la place
+    difficultés
+        cibler les entités gérées par doctrine est facile
+                x->getName() for x in $this->entityManager->getMetadataFactory()->getAllMetadata()
+                et build de la suppression en DQL ou via les obj dédiés
+            par contre cibler les tables de jointures auto générées l'est un peu moins (voir impossible?)
+            du coup faudrait parcourir ligne par ligne pour suppr les relations => pas possible c'est naze
+            donc la solution restante est de faire du sql pur :|
+        l'upsert est beaucoup plus compliqué que prévu:
+            la récupération des PK d'une entité est possible mais il n'y pas de moyen évident de s'assurer du nom des getters/setters depuis le nom de la prop, et évidemment les propriétés sont private (avec des getters setters qui font que)
+            qui plus est il faudra gérer les champs d'associations et ça risque d'etre l'enfer sur terre
