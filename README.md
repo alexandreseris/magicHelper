@@ -10,21 +10,24 @@ Data used in this project come from the [Scryfall API](https://scryfall.com/docs
 
 This project is build using PHP 7.4 and Symfony 4
 
+## Installation (dev)
+
+copy .env.dist to .env.dev
+download a card bulk file from [Scryfall](https://scryfall.com/docs/api/bulk-data) and place it under var/scryfallData.json
+
+install dependencies
+
+```sh
+php composer.phar install
+```
+
+start dev server
+
+```sh
+symfony server:start
+```
+
 <!--
-## Installation
-
-OS X & Linux:
-
-```sh
-npm install my-crazy-module --save
-```
-
-Windows:
-
-```sh
-edit autoexec.bat
-```
-
 ## Usage example
 
 A few motivating and useful examples of how your product can be used. Spice this up with code blocks and potentially more screenshots.
