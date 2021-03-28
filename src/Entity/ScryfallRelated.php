@@ -4,6 +4,9 @@ namespace App\Entity;
 
 use App\Entity\ScryfallAbstract;
 
+/**
+ * scryfall json data for card's related cards
+ */
 class ScryfallRelated extends ScryfallAbstract {
     protected function subObjectMapping(): array {
         return [];

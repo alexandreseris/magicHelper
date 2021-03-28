@@ -26,12 +26,12 @@ class Symbol
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isFunny;
+    private $is_funny;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isMana;
+    private $is_mana;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -88,24 +88,24 @@ class Symbol
 
     public function getIsFunny(): ?bool
     {
-        return $this->isFunny;
+        return $this->is_funny;
     }
 
-    public function setIsFunny(bool $isFunny): self
+    public function setIsFunny(bool $is_funny): self
     {
-        $this->isFunny = $isFunny;
+        $this->is_funny = $is_funny;
 
         return $this;
     }
 
     public function getIsMana(): ?bool
     {
-        return $this->isMana;
+        return $this->is_mana;
     }
 
-    public function setIsMana(bool $isMana): self
+    public function setIsMana(bool $is_mana): self
     {
-        $this->isMana = $isMana;
+        $this->is_mana = $is_mana;
 
         return $this;
     }

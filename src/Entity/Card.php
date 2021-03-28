@@ -16,17 +16,17 @@ class Card
      * @ORM\Id
      * @ORM\Column(type="string", length=36)
      */
-    private $idScryfall;
+    private $id_scryfall;
 
     /**
      * @ORM\Column(type="string", length=36)
      */
-    private $idOracle;
+    private $id_oracle;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $idArena;
+    private $id_arena;
 
     /**
      * @ORM\Column(type="date", nullable=true)
@@ -54,7 +54,7 @@ class Card
     /**
      * @ORM\ManyToMany(targetEntity=Color::class)
      * @ORM\JoinTable(name="card_colorIdentity",
-     *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")},
+     *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="id_scryfall")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="color_id", referencedColumnName="code")}
      * )
      */
@@ -63,7 +63,7 @@ class Card
     /**
      * @ORM\ManyToMany(targetEntity=Color::class)
      * @ORM\JoinTable(name="card_producedMana",
-     *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")},
+     *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="id_scryfall")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="color_id", referencedColumnName="code")}
      * )
      */
@@ -72,7 +72,7 @@ class Card
     /**
      * @ORM\ManyToMany(targetEntity=Keyword::class, inversedBy="cards")
      * @ORM\JoinTable(name="card_keyword",
-     *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")},
+     *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="id_scryfall")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="keyword_id", referencedColumnName="name")}
      * )
      */
@@ -81,8 +81,8 @@ class Card
     /**
      * @ORM\ManyToMany(targetEntity=Card::class)
      * @ORM\JoinTable(name="card_related",
-     *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")},
-     *   inverseJoinColumns={@ORM\JoinColumn(name="relatedCard_id", referencedColumnName="idScryfall")}
+     *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="id_scryfall")},
+     *   inverseJoinColumns={@ORM\JoinColumn(name="relatedCard_id", referencedColumnName="id_scryfall")}
      * )
      */
     private $related;
@@ -109,36 +109,36 @@ class Card
 
     public function getIdScryfall(): ?string
     {
-        return $this->idScryfall;
+        return $this->id_scryfall;
     }
 
-    public function setIdScryfall(string $idScryfall): self
+    public function setIdScryfall(string $id_scryfall): self
     {
-        $this->idScryfall = $idScryfall;
+        $this->id_scryfall = $id_scryfall;
 
         return $this;
     }
 
     public function getIdOracle(): ?string
     {
-        return $this->idOracle;
+        return $this->id_oracle;
     }
 
-    public function setIdOracle(string $idOracle): self
+    public function setIdOracle(string $id_oracle): self
     {
-        $this->idOracle = $idOracle;
+        $this->id_oracle = $id_oracle;
 
         return $this;
     }
 
     public function getIdArena(): ?int
     {
-        return $this->idArena;
+        return $this->id_arena;
     }
 
-    public function setIdArena(?int $idArena): self
+    public function setIdArena(?int $id_arena): self
     {
-        $this->idArena = $idArena;
+        $this->id_arena = $id_arena;
 
         return $this;
     }

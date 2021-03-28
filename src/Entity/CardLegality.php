@@ -15,7 +15,7 @@ class CardLegality
     /**
      * @ORM\Id
      * @ORM\ManyToOne(targetEntity=Card::class, inversedBy="legalities")
-     * @ORM\JoinColumn(nullable=false, name="card_id", referencedColumnName="idScryfall")
+     * @ORM\JoinColumn(nullable=false, name="card_id", referencedColumnName="id_scryfall")
      */
     private $card;
 

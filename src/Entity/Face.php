@@ -15,7 +15,7 @@ class Face
     /**
      * @ORM\Id
      * @ORM\ManyToOne(targetEntity=Card::class, inversedBy="faces")
-     * @ORM\JoinColumn(nullable=false, name="card_id", referencedColumnName="idScryfall")
+     * @ORM\JoinColumn(nullable=false, name="card_id", referencedColumnName="id_scryfall")
      */
     private $card;
 
@@ -23,7 +23,7 @@ class Face
      * @ORM\Id
      * @ORM\Column(type="integer")
      */
-    private $index;
+    private $face_index;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -71,7 +71,7 @@ class Face
      * @ORM\JoinTable(name="face_color",
      *   joinColumns={
      *     @ORM\JoinColumn(name="card_id", referencedColumnName="card_id"),
-     *     @ORM\JoinColumn(name="face_index", referencedColumnName="index")
+     *     @ORM\JoinColumn(name="face_index", referencedColumnName="face_index")
      *   },
      *   inverseJoinColumns={
      *     @ORM\JoinColumn(name="color_id", referencedColumnName="code")
@@ -85,7 +85,7 @@ class Face
      * @ORM\JoinTable(name="face_manaCost",
      *   joinColumns={
      *     @ORM\JoinColumn(name="card_id", referencedColumnName="card_id"),
-     *     @ORM\JoinColumn(name="face_index", referencedColumnName="index")
+     *     @ORM\JoinColumn(name="face_index", referencedColumnName="face_index")
      *   },
      *   inverseJoinColumns={@ORM\JoinColumn(name="symbol_id", referencedColumnName="code")}
      * )
@@ -115,14 +115,14 @@ class Face
         return $this;
     }
 
-    public function getIndex(): ?int
+    public function getFaceIndex(): ?int
     {
-        return $this->index;
+        return $this->face_index;
     }
 
-    public function setIndex(int $index): self
+    public function setFaceIndex(int $face_index): self
     {
-        $this->index = $index;
+        $this->face_index = $face_index;
 
         return $this;
     }

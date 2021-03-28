@@ -32,7 +32,7 @@ class Keyword
      * @ORM\ManyToMany(targetEntity=Card::class, mappedBy="keywords")
      * @ORM\JoinTable(name="card_keyword",
      *   joinColumns={@ORM\JoinColumn(name="keyword_id", referencedColumnName="name")},
-     *   inverseJoinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="idScryfall")}
+     *   inverseJoinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="id_scryfall")}
      * )
      */
     private $cards;
