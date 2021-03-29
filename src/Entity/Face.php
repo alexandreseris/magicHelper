@@ -53,12 +53,12 @@ class Face
     /**
      * @ORM\Column(type="string", length=5, nullable=true)
      */
-    private $power;
+    private $power_value;
 
     /**
      * @ORM\Column(type="string", length=5, nullable=true)
      */
-    private $toughness;
+    private $toughness_value;
 
     /**
      * @ORM\ManyToOne(targetEntity=Artist::class)
@@ -187,26 +187,26 @@ class Face
         return $this;
     }
 
-    public function getPower(): ?string
+    public function getPowerValue(): ?string
     {
-        return $this->power;
+        return $this->power_value;
     }
 
-    public function setPower(?string $power): self
+    public function setPowerValue(?string $power_value): self
     {
-        $this->power = $power;
+        $this->power_value = $power_value;
 
         return $this;
     }
 
-    public function getToughness(): ?string
+    public function getToughnessValue(): ?string
     {
-        return $this->toughness;
+        return $this->toughness_value;
     }
 
-    public function setToughness(?string $toughness): self
+    public function setToughnessValue(?string $toughness_value): self
     {
-        $this->toughness = $toughness;
+        $this->toughness_value = $toughness_value;
 
         return $this;
     }

@@ -18,6 +18,7 @@ services:
             int $scryfallWaitSecondsBetweenCalls: 2
             array $tablesNotScryfall: ['data_date']
             string $scryfallBulkType: 'oracle_cards'
+            bool $scryfallFileDlSkip: '%env(SCRYFALL_FILE_DL_SKIP)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -41,8 +42,7 @@ services:
     App\Service\ScryfallDataGetter:
         arguments:
             $scryfallTestData: '%kernel.project_dir%/var/scryfallData.json'
-            $scryfallFileDlSkip: '%env(SCRYFALL_FILE_DL_SKIP)%'
 
     App\Service\ScryfallUpdates:
         arguments:
-            $scryfallFileDlSkip: '%env(SCRYFALL_FILE_DL_SKIP)%'
+            $batchSize: 500

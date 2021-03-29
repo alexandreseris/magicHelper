@@ -182,6 +182,7 @@ class ScryfallDataGetter
         if ($this->scryfallFileDlSkip === true) {
             $neddUpdate = true;
             $tmpFile = $this->scryfallTestData;
+            $bulkDate = new Datetime();
             $this->logger->info("skipping dl, using " . $tmpFile . " instead");
         } else {
             $response = $this->httpclient->request("GET", $this->scryfallApiUrl . "/bulk-data");
@@ -194,7 +195,7 @@ class ScryfallDataGetter
                     break;
                 }
             }
-            if ($targetBulk == null) {
+            if (is_null($targetBulk)) {
                 throw new \Exception("did not find " . $bulkType . " in scryfall's bulks available", 1);
             }
             $lastUpdate = $this->entityManager->getRepository(\App\Entity\DataDate::class)->findAll();
@@ -239,7 +240,10 @@ class ScryfallDataGetter
 
             // memory safe Json parser cause the file can be pretty fatty
             $parsedFile = JsonMachine::fromFile($tmpFile);
-            return [$parsedFile, $tmpFile];
+            return [
+                "parsedFile" => $parsedFile,
+                "filePath" => $tmpFile,
+                "bulkDate" => $bulkDate];
         }
         return [];
     }

@@ -30,7 +30,14 @@ abstract class ScryfallAbstract {
         }
         // every prop is not present on the json, so the one missing are init to null
         $reflect = new \ReflectionClass($this);
-        foreach (array_map(function($value) {return $value->getName();}, $reflect->getProperties()) as $prop) {
+        foreach (
+            array_map(
+                function($value) {return $value->getName();},
+                $reflect->getProperties()
+            )
+            as $prop)
+        {
+
             $reflectProp = new \ReflectionProperty(static::class, $prop);
             if (! $reflectProp->isInitialized($this)) {
                 if ($reflectProp->getType()->allowsNull()) {

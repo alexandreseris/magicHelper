@@ -57,6 +57,11 @@ class Symbol
      */
     private $icon_local;
 
+    /**
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $code_variant;
+
     public function __construct()
     {
         $this->colors = new ArrayCollection();
@@ -166,6 +171,18 @@ class Symbol
     public function setIconLocal(?string $icon_local): self
     {
         $this->icon_local = $icon_local;
+
+        return $this;
+    }
+
+    public function getCodeVariant(): ?string
+    {
+        return $this->code_variant;
+    }
+
+    public function setCodeVariant(?string $code_variant): self
+    {
+        $this->code_variant = $code_variant;
 
         return $this;
     }

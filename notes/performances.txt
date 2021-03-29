@@ -1,0 +1,7 @@
+update data from scryfall
+    30s just for looping over the json
+    40s if scryfall obj constructing is added
+
+    and 4m50 with actual updates (and i actually did miss a lot of update so its gonna be even longer)
+        update time is not linear and it takes more and more time
+        maybe its caused by debug

@@ -61,10 +61,10 @@ class Card
     private $color_identity;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Color::class)
+     * @ORM\ManyToMany(targetEntity=Symbol::class)
      * @ORM\JoinTable(name="card_producedMana",
      *   joinColumns={@ORM\JoinColumn(name="card_id", referencedColumnName="id_scryfall")},
-     *   inverseJoinColumns={@ORM\JoinColumn(name="color_id", referencedColumnName="code")}
+     *   inverseJoinColumns={@ORM\JoinColumn(name="symbol_id", referencedColumnName="code")}
      * )
      */
     private $produced_mana;
@@ -216,14 +216,14 @@ class Card
     }
 
     /**
-     * @return Collection|Color[]
+     * @return Collection|Symbol[]
      */
     public function getProducedMana(): Collection
     {
         return $this->produced_mana;
     }
 
-    public function addProducedMana(Color $producedMana): self
+    public function addProducedMana(Symbol $producedMana): self
     {
         if (!$this->produced_mana->contains($producedMana)) {
             $this->produced_mana[] = $producedMana;
@@ -232,7 +232,7 @@ class Card
         return $this;
     }
 
-    public function removeProducedMana(Color $producedMana): self
+    public function removeProducedMana(Symbol $producedMana): self
     {
         $this->produced_mana->removeElement($producedMana);
 
