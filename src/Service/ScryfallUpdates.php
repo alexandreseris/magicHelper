@@ -19,6 +19,7 @@ class ScryfallUpdates {
     private ScryfallDataGetter $scryfallDataGetter;
 
     private array $cache;
+    private array $relatedCards;
 
     public function __construct(
         string $scryfallDateTimeFormat,
@@ -46,6 +47,7 @@ class ScryfallUpdates {
         $this->entityManager->getConnection()->getConfiguration()->setSQLLogger(null);
 
         $this->cache = [];
+        $this->relatedCards = [];
     }
 
     /**
@@ -106,7 +108,9 @@ class ScryfallUpdates {
             }
         }
         foreach ($tables as $table) {
-            $this->entityManager->getConnection()->prepare("DELETE FROM " . $table)->execute();
+            if ($table !== "data_date") {
+                $this->entityManager->getConnection()->prepare("DELETE FROM " . $table)->execute();
+            }
         }
     }
 
@@ -243,43 +247,104 @@ class ScryfallUpdates {
                 $this->entityManager->persist($legality);
             }
         }
-        
-        if ( ! is_null($scryfallCard->card_faces) ) {
-            /** @var \App\Entity\ScryfallFace $faceScryfall */
-            foreach ($scryfallCard->card_faces as $faceIndex => $faceScryfall) {
-                $face = new \App\Entity\Face();
-                $face->setCard($card);
-                $face->setFaceIndex($faceIndex);
-                if ( ! is_null($faceScryfall->image_uris) && key_exists("normal", $faceScryfall->image_uris) ) {
-                    $face->setImageUrl($faceScryfall->image_uris["normal"]);
-                }
-                $face->setName($faceScryfall->name);
-                $face->setTypeLine($faceScryfall->type_line);
-                $face->setOracleText($faceScryfall->oracle_text);
-                $face->setPrintedText($faceScryfall->printed_text);
-                $face->setPowerValue($faceScryfall->power);
-                $face->setToughnessValue($faceScryfall->toughness);
-                if (key_exists($faceScryfall->artist, $this->cache['artist'])) {
-                    $face->setArtist($this->cache['artist'][$faceScryfall->artist]);
-                }
-                if ( ! is_null($faceScryfall->colors) ) {
-                    foreach ($faceScryfall->colors as $color) {
-                        if (key_exists($color, $this->cache['color'])) {
-                            $face->addColor($this->cache['color'][$color]);
-                        }
+
+        // scryfall does not consider one face cards actually beeing card with a face and instead store data on the card side
+        // the model of this app instead consider each card has one or more face, hence this little trick
+        if ( is_null($scryfallCard->card_faces) || count($scryfallCard->card_faces) === 0 ) {
+            $scryfallCard->card_faces = [
+                new \App\Entity\ScryfallFace( \App\Entity\ScryfallFace::faceArrayFromCardObject($scryfallCard) )
+            ];
+        }
+
+        /** @var \App\Entity\ScryfallFace $faceScryfall */
+        foreach ($scryfallCard->card_faces as $faceIndex => $faceScryfall) {
+            $face = new \App\Entity\Face();
+            $face->setFaceId($card->getIdScryfall() . "_" . strval($faceIndex));
+            $face->setCard($card);
+            $face->setFaceIndex($faceIndex);
+            if ( ! is_null($faceScryfall->image_uris) && key_exists("normal", $faceScryfall->image_uris) ) {
+                $face->setImageUrl($faceScryfall->image_uris["normal"]);
+            }
+            $face->setName($faceScryfall->name);
+            $face->setTypeLine($faceScryfall->type_line);
+            $face->setOracleText($faceScryfall->oracle_text);
+            $face->setPrintedText($faceScryfall->printed_text);
+            $face->setPowerValue($faceScryfall->power);
+            $face->setToughnessValue($faceScryfall->toughness);
+            if (key_exists($faceScryfall->artist, $this->cache['artist'])) {
+                $face->setArtist($this->cache['artist'][$faceScryfall->artist]);
+            }
+            if ( ! is_null($faceScryfall->colors) ) {
+                foreach ($faceScryfall->colors as $color) {
+                    if (key_exists($color, $this->cache['color'])) {
+                        $face->addColor($this->cache['color'][$color]);
                     }
                 }
-                // manual split to do, cause scryfall return a string!
-                // if ( ! is_null($faceScryfall->mana_cost) && $faceScryfall->mana_cost !== "" ) {
-                //     foreach ($faceScryfall->mana_cost as $mana_cost) {
-                //         if (key_exists($mana_cost, $this->cache['symbol'])) {
-                //             $face->addManaCost($this->cache['symbol'][$mana_cost]);
-                //         }
-                //     }
-                // }
-                $this->entityManager->persist($face);
+            }
+            $this->entityManager->persist($face);
+            // manual split, scryfall returns a string!
+            if ( ! is_null($faceScryfall->mana_cost) && $faceScryfall->mana_cost !== "" ) {
+                $manacostArray = [];
+                $buffer = "";
+                foreach (str_split($faceScryfall->mana_cost) as $char) {
+                    $buffer .= $char;
+                    if ($char === "}") {
+                        if ( ! key_exists($buffer, $manacostArray)) {
+                            $manacostArray[$buffer] = 1;
+                        } else {
+                            $manacostArray[$buffer] += 1;
+                        }
+                        $buffer = "";
+                    }
+                }
+
+                foreach ($manacostArray as $symbol_code => $quanity) {
+                    if (key_exists($symbol_code, $this->cache['symbol'])) {
+                        $faceManaCost = new \App\Entity\FaceManaCost();
+                        $faceManaCost->setFace($face);
+                        $faceManaCost->setSymbolId($this->cache['symbol'][$symbol_code]);
+                        $faceManaCost->setQuantity($quanity);
+                        $this->entityManager->persist($faceManaCost);
+                    }
+                }
             }
         }
+        if ( ! is_null($scryfallCard->all_parts) && count($scryfallCard->all_parts) > 0) {
+            $this->relatedCards[$card->getIdScryfall()] = [];
+            /** @var \App\Entity\ScryfallRelated $relatedCard */
+            foreach ($scryfallCard->all_parts as $relatedCard) {
+                $this->relatedCards[$card->getIdScryfall()][] = $relatedCard->id;
+            }
+        }
+    }
+
+    /**
+     * insert card related cards. caution, must be run after insertCard method!
+     * this process could be speed up using cache as some related cards and referenced cards are presents several times in the array
+     */
+    private function insertCardRelated() {
+        $cardRepo = $this->entityManager->getRepository(\App\Entity\Card::class);
+        $n = 0;
+        foreach ($this->relatedCards as $referencedCardId => $relatedCardsIds) {
+            /** @var \App\Entity\Card $referencedCard */
+            $referencedCard = $cardRepo->findOneBy(["id_scryfall" => $referencedCardId]);
+            if (is_null($referencedCard)) {
+                continue;
+            }
+            foreach ($relatedCardsIds as $relatedCardId) {
+                $relatedCard = $cardRepo->findOneBy(["id_scryfall" => $relatedCardId]);
+                if (is_null($relatedCard)) {
+                    continue;
+                }
+                $referencedCard->addRelated($relatedCard);
+                if ($n % $this->batchSize === 0) {
+                    $this->entityManager->flush();
+                }
+                $n += 1;
+            }
+            $n += 1;
+        }
+        $this->entityManager->flush();
     }
 
     /**
@@ -297,11 +362,14 @@ class ScryfallUpdates {
         $bulkDate = $dataGetterReturn["bulkDate"];
         $docSize = filesize($tmpFile);
 
-        // disable if needed to speed up tests
-        // $this->truncateTables();
-        // $this->insertCardDependenciesData();
+        // disable if needed to speed up tests and data is already inserted!
+        $this->logger->info("truncating tables");
+        $this->truncateTables();
+        $this->logger->info("starting card dependencies insertion");
+        $this->insertCardDependenciesData();
         $this->initCache();
 
+        $this->logger->info("start of card data insertion");
         $lastProgress = 0;
         $numberOfCardsTreated = 0;
         $this->logger->info("progression: " . strval($lastProgress) . "%, " . strval($numberOfCardsTreated) . " cards treated");
@@ -340,6 +408,7 @@ class ScryfallUpdates {
             if ($numberOfCardsTreated % $this->batchSize === 0) {
                 $this->entityManager->flush();
                 // clearing from memory lines alredy inserted. can't call clear with no param as some data are stored as cache and would become unusable
+                $this->entityManager->getUnitOfWork()->clear(\App\Entity\FaceManaCost::class);
                 $this->entityManager->getUnitOfWork()->clear(\App\Entity\Face::class);
                 $this->entityManager->getUnitOfWork()->clear(\App\Entity\CardLegality::class);
                 $this->entityManager->getUnitOfWork()->clear(\App\Entity\Card::class);
@@ -350,18 +419,23 @@ class ScryfallUpdates {
         $this->entityManager->flush();
         $this->logger->info("progression: 100%, " . strval($numberOfCardsTreated) . " cards treated");
 
-        // $lastUpdate = $this->entityManager->getRepository(\App\Entity\DataDate::class)->findAll();
-        // if (count($lastUpdate) == 0) {
-        //     $currentUpdate = new \App\Entity\DataDate();
-        //     $currentUpdate->setUpdatedAt($bulkDate);
-        //     $this->entityManager->persist($currentUpdate);
-        // } else {
-        //     $lastUpdate[0]->setUpdatedAt($bulkDate);
-        // }
-        // $this->entityManager->flush();
+        $this->logger->info("start of card related insertion");
+        $this->insertCardRelated();
+
+        $lastUpdate = $this->entityManager->getRepository(\App\Entity\DataDate::class)->findAll();
+        if (count($lastUpdate) == 0) {
+            $currentUpdate = new \App\Entity\DataDate();
+            $currentUpdate->setUpdatedAt($bulkDate);
+            $this->entityManager->persist($currentUpdate);
+        } else {
+            $lastUpdate[0]->setUpdatedAt($bulkDate);
+        }
+        $this->entityManager->flush();
 
         if (! $this->scryfallFileDlSkip === true) {
             unlink($tmpFile);
         }
+
+        $this->logger->info("end of scryfall update");
     }
 }

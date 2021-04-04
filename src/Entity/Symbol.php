@@ -62,9 +62,15 @@ class Symbol
      */
     private $code_variant;
 
+    /**
+     * @ORM\OneToMany(targetEntity=FaceManaCost::class, mappedBy="symbol_id")
+     */
+    private $faceManaCosts;
+
     public function __construct()
     {
         $this->colors = new ArrayCollection();
+        $this->faceManaCosts = new ArrayCollection();
     }
 
     public function getCode(): ?string
@@ -183,6 +189,36 @@ class Symbol
     public function setCodeVariant(?string $code_variant): self
     {
         $this->code_variant = $code_variant;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|FaceManaCost[]
+     */
+    public function getFaceManaCosts(): Collection
+    {
+        return $this->faceManaCosts;
+    }
+
+    public function addFaceManaCost(FaceManaCost $faceManaCost): self
+    {
+        if (!$this->faceManaCosts->contains($faceManaCost)) {
+            $this->faceManaCosts[] = $faceManaCost;
+            $faceManaCost->setSymbolId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFaceManaCost(FaceManaCost $faceManaCost): self
+    {
+        if ($this->faceManaCosts->removeElement($faceManaCost)) {
+            // set the owning side to null (unless already changed)
+            if ($faceManaCost->getSymbolId() === $this) {
+                $faceManaCost->setSymbolId(null);
+            }
+        }
 
         return $this;
     }

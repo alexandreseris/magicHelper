@@ -14,13 +14,17 @@ class Face
 {
     /**
      * @ORM\Id
+     * @ORM\Column(type="string", length=40)
+     */
+    private $face_id;
+
+    /**
      * @ORM\ManyToOne(targetEntity=Card::class, inversedBy="faces")
      * @ORM\JoinColumn(nullable=false, name="card_id", referencedColumnName="id_scryfall")
      */
     private $card;
 
     /**
-     * @ORM\Id
      * @ORM\Column(type="integer")
      */
     private $face_index;
@@ -70,8 +74,7 @@ class Face
      * @ORM\ManyToMany(targetEntity=Color::class)
      * @ORM\JoinTable(name="face_color",
      *   joinColumns={
-     *     @ORM\JoinColumn(name="card_id", referencedColumnName="card_id"),
-     *     @ORM\JoinColumn(name="face_index", referencedColumnName="face_index")
+     *     @ORM\JoinColumn(name="face_id", referencedColumnName="face_id"),
      *   },
      *   inverseJoinColumns={
      *     @ORM\JoinColumn(name="color_id", referencedColumnName="code")
@@ -81,18 +84,6 @@ class Face
     private $colors;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Symbol::class)
-     * @ORM\JoinTable(name="face_manaCost",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="card_id", referencedColumnName="card_id"),
-     *     @ORM\JoinColumn(name="face_index", referencedColumnName="face_index")
-     *   },
-     *   inverseJoinColumns={@ORM\JoinColumn(name="symbol_id", referencedColumnName="code")}
-     * )
-     */
-    private $mana_costs;
-
-    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $image_local;
@@ -100,7 +91,18 @@ class Face
     public function __construct()
     {
         $this->colors = new ArrayCollection();
-        $this->mana_costs = new ArrayCollection();
+    }
+
+    public function getFaceId(): ?string
+    {
+        return $this->face_id;
+    }
+
+    public function setFaceId(string $face_id): self
+    {
+        $this->face_id = $face_id;
+
+        return $this;
     }
 
     public function getCard(): ?Card
@@ -243,30 +245,6 @@ class Face
     public function removeColor(Color $color): self
     {
         $this->colors->removeElement($color);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Symbol[]
-     */
-    public function getManaCosts(): Collection
-    {
-        return $this->mana_costs;
-    }
-
-    public function addManaCost(Symbol $manaCost): self
-    {
-        if (!$this->mana_costs->contains($manaCost)) {
-            $this->mana_costs[] = $manaCost;
-        }
-
-        return $this;
-    }
-
-    public function removeManaCost(Symbol $manaCost): self
-    {
-        $this->mana_costs->removeElement($manaCost);
 
         return $this;
     }

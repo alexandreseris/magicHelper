@@ -1,13 +1,8 @@
 updates operations, left to do:
-    insert card related (how to not break ram limitations ? ? ?)
-    parse and insert face mana cost
-
-    each card should be at least inserted once in faces, so if scryfall does not provide face data, then it should be build instead and treated as such
-
     need to do some data validation to check if i didnt insert wrong data somehow
 
     speed up the process as its slow af
-    
+
 
 
 notes regarding the management of lines already in db (bu could need update)
