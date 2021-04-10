@@ -12,7 +12,7 @@ This project is build using PHP 7.4 and Symfony 4
 
 ## Installation (dev)
 
-copy .env.dist to .env.dev
+copy .env.dist to .env.dev  
 download a card bulk file from [Scryfall](https://scryfall.com/docs/api/bulk-data) and place it under var/scryfallData.json
 
 install dependencies
