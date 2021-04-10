@@ -21,6 +21,19 @@ install dependencies
 php composer.phar install
 ```
 
+build the database if needed
+
+```sh
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+```
+
+populate the databse with scryfall data
+
+```sh
+php bin/console scryfall:update
+```
+
 start dev server
 
 ```sh
