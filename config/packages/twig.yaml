@@ -1,2 +1,6 @@
 twig:
     default_path: '%kernel.project_dir%/templates'
+    globals:
+        faces_images_public: '%app.faces_images_public%'
+        sets_icons_public: '%app.sets_icons_public%'
+        symbols_icon_public: '%app.symbols_icon_public%'

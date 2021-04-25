@@ -1,7 +1,14 @@
-updates operations, left to do:
-    need to do some data validation to check if i didnt insert wrong data somehow
+backend:
+    data:
+        fix card images url retrieve: if card has face and face has no image, get card's image
 
-    speed up the process as its slow af
+        make a service or whatever to deal with mana symbol ordering
+            => should i store data or recompute every time???
+
+    make a good 404 page
+
+front
+    try to apply a filter to set icon to show card rarity if color is available, else juste print the icon
 
 
 

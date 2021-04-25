@@ -2,25 +2,25 @@
 
 namespace App\Repository;
 
-use App\Entity\LegalityValue;
+use App\Entity\Legality;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method LegalityValue|null find($id, $lockMode = null, $lockVersion = null)
- * @method LegalityValue|null findOneBy(array $criteria, array $orderBy = null)
- * @method LegalityValue[]    findAll()
- * @method LegalityValue[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Legality|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Legality|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Legality[]    findAll()
+ * @method Legality[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class LegalityValueRepository extends ServiceEntityRepository
+class LegalityRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, LegalityValue::class);
+        parent::__construct($registry, Legality::class);
     }
 
     // /**
-    //  * @return LegalityValue[] Returns an array of LegalityValue objects
+    //  * @return Legality[] Returns an array of Legality objects
     //  */
     /*
     public function findByExampleField($value)
@@ -37,7 +37,7 @@ class LegalityValueRepository extends ServiceEntityRepository
     */
 
     /*
-    public function findOneBySomeField($value): ?LegalityValue
+    public function findOneBySomeField($value): ?Legality
     {
         return $this->createQueryBuilder('l')
             ->andWhere('l.exampleField = :val')

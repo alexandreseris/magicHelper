@@ -21,17 +21,17 @@ class CardLegality
 
     /**
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity=LegalityType::class)
-     * @ORM\JoinColumn(nullable=false, name="legalityType_id", referencedColumnName="name")
+     * @ORM\ManyToOne(targetEntity=Format::class)
+     * @ORM\JoinColumn(nullable=false, name="format_id", referencedColumnName="code")
      */
-    private $legality_type;
+    private $format;
 
     /**
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity=LegalityValue::class)
-     * @ORM\JoinColumn(nullable=false, name="legalityValue_id", referencedColumnName="name")
+     * @ORM\ManyToOne(targetEntity=Legality::class)
+     * @ORM\JoinColumn(nullable=false, name="legality_id", referencedColumnName="code")
      */
-    private $legality_value;
+    private $legality;
 
 
     public function __construct()
@@ -54,26 +54,26 @@ class CardLegality
         return $this;
     }
 
-    public function getLegalityType(): ?LegalityType
+    public function getFormat(): ?Format
     {
-        return $this->legality_type;
+        return $this->format;
     }
 
-    public function setLegalityType(?LegalityType $legality_type): self
+    public function setFormat(?Format $format): self
     {
-        $this->legality_type = $legality_type;
+        $this->format = $format;
 
         return $this;
     }
 
-    public function getLegalityValue(): ?LegalityValue
+    public function getLegality(): ?Legality
     {
-        return $this->legality_value;
+        return $this->legality;
     }
 
-    public function setLegalityValue(?LegalityValue $legality_value): self
+    public function setLegality(?Legality $legality): self
     {
-        $this->legality_value = $legality_value;
+        $this->legality = $legality;
 
         return $this;
     }

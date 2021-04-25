@@ -88,9 +88,15 @@ class Face
      */
     private $image_local;
 
+    /**
+     * @ORM\OneToMany(targetEntity=FaceManaCost::class, mappedBy="face")
+     */
+    private $manaCosts;
+
     public function __construct()
     {
         $this->colors = new ArrayCollection();
+        $this->manaCosts = new ArrayCollection();
     }
 
     public function getFaceId(): ?string
@@ -259,5 +265,13 @@ class Face
         $this->image_local = $image_local;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|FaceManaCost[]
+     */
+    public function getManaCosts(): Collection
+    {
+        return $this->manaCosts;
     }
 }

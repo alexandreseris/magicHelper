@@ -63,7 +63,7 @@ class Symbol
     private $code_variant;
 
     /**
-     * @ORM\OneToMany(targetEntity=FaceManaCost::class, mappedBy="symbol_id")
+     * @ORM\OneToMany(targetEntity=FaceManaCost::class, mappedBy="symbol")
      */
     private $faceManaCosts;
 
@@ -205,7 +205,7 @@ class Symbol
     {
         if (!$this->faceManaCosts->contains($faceManaCost)) {
             $this->faceManaCosts[] = $faceManaCost;
-            $faceManaCost->setSymbolId($this);
+            $faceManaCost->setSymbol($this);
         }
 
         return $this;
@@ -215,8 +215,8 @@ class Symbol
     {
         if ($this->faceManaCosts->removeElement($faceManaCost)) {
             // set the owning side to null (unless already changed)
-            if ($faceManaCost->getSymbolId() === $this) {
-                $faceManaCost->setSymbolId(null);
+            if ($faceManaCost->getSymbol() === $this) {
+                $faceManaCost->setSymbol(null);
             }
         }
 

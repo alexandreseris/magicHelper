@@ -1,22 +1,27 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Scryfall;
 
 use Psr\Log\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use \App\Service\HttpClient;
 use DateTime;
 
-class ScryfallUpdates {
+class Updates {
     private string $scryfallDateTimeFormat;
     private string $scryfallDateFormat;
     private array $tablesNotScryfall;
     private bool $scryfallFileDlSkip;
     private int $batchSize;
     private string $scryfallBulkType;
+    private string $projectDir;
+    private string $setsIconDir;
+    private string $symbolsIconDir;
 
     private LoggerInterface $logger;
     private EntityManagerInterface $entityManager;
-    private ScryfallDataGetter $scryfallDataGetter;
+    private DataGetter $scryfallDataGetter;
+    private HttpClient $httpClient;
 
     private array $cache;
     private array $relatedCards;
@@ -28,10 +33,14 @@ class ScryfallUpdates {
         bool $scryfallFileDlSkip,
         int $batchSize,
         string $scryfallBulkType,
+        string $projectDir,
+        string $setsIconDir,
+        string $symbolsIconDir,
 
         LoggerInterface $logger,
         EntityManagerInterface $entityManager,
-        ScryfallDataGetter $scryfallDataGetter
+        DataGetter $scryfallDataGetter,
+        HttpClient $httpClient
     ) {
         $this->scryfallDateTimeFormat = $scryfallDateTimeFormat;
         $this->scryfallDateFormat = $scryfallDateFormat;
@@ -39,15 +48,21 @@ class ScryfallUpdates {
         $this->scryfallFileDlSkip = $scryfallFileDlSkip;
         $this->batchSize = $batchSize;
         $this->scryfallBulkType = $scryfallBulkType;
+        $this->projectDir = $projectDir;
+        $this->setsIconDir = $setsIconDir;
+        $this->symbolsIconDir = $symbolsIconDir;
 
         $this->logger = $logger;
         $this->entityManager = $entityManager;
         $this->scryfallDataGetter = $scryfallDataGetter;
+        $this->httpClient = $httpClient;
 
         $this->entityManager->getConnection()->getConfiguration()->setSQLLogger(null);
 
         $this->cache = [];
         $this->relatedCards = [];
+
+        $this->aditionnalData = new \App\AditionnalData\AditionnalData();
     }
 
     /**
@@ -81,8 +96,8 @@ class ScryfallUpdates {
 
         // the following can be updated manually inside the card loop
         $this->buildCacheItem("rarity", \App\Entity\Rarity::class, "getName");
-        $this->buildCacheItem("legalityType", \App\Entity\LegalityType::class, "getName");
-        $this->buildCacheItem("legalityValue", \App\Entity\LegalityValue::class, "getName");
+        $this->buildCacheItem("format", \App\Entity\Format::class, "getCode");
+        $this->buildCacheItem("legality", \App\Entity\Legality::class, "getCode");
     }
 
     /**
@@ -238,11 +253,11 @@ class ScryfallUpdates {
 
         $this->entityManager->persist($card);
 
-        foreach ($scryfallCard->legalities as $legalityType => $legalityValue) {
-            if (key_exists($legalityType, $this->cache['legalityType']) && key_exists($legalityValue, $this->cache['legalityValue'])) {
+        foreach ($scryfallCard->legalities as $format => $legality) {
+            if (key_exists($format, $this->cache['format']) && key_exists($legality, $this->cache['legality'])) {
                 $legality = new \App\Entity\CardLegality();
-                $legality->setLegalityType($this->cache['legalityType'][$legalityType]);
-                $legality->setLegalityValue($this->cache['legalityValue'][$legalityValue]);
+                $legality->setFormat($this->cache['format'][$format]);
+                $legality->setLegality($this->cache['legality'][$legality]);
                 $legality->setCard($card);
                 $this->entityManager->persist($legality);
             }
@@ -302,7 +317,7 @@ class ScryfallUpdates {
                     if (key_exists($symbol_code, $this->cache['symbol'])) {
                         $faceManaCost = new \App\Entity\FaceManaCost();
                         $faceManaCost->setFace($face);
-                        $faceManaCost->setSymbolId($this->cache['symbol'][$symbol_code]);
+                        $faceManaCost->setSymbol($this->cache['symbol'][$symbol_code]);
                         $faceManaCost->setQuantity($quanity);
                         $this->entityManager->persist($faceManaCost);
                     }
@@ -347,6 +362,35 @@ class ScryfallUpdates {
         $this->entityManager->flush();
     }
 
+    private function retrieveMissingIcons() {
+        $specialChars = "/\{|\}|\/|\\/";
+        /** @var \App\Entity\Set $set */
+        foreach ($this->entityManager->getRepository(\App\Entity\Set::class)->findBy(["icon_local"=> null]) as $set) {
+            $filename = $set->getCode() . '.svg';
+            $filename = preg_replace($specialChars, "", $filename);
+            $publicPath = $this->setsIconDir . '/' . $filename;
+            $filePath = $this->projectDir . '/' . $publicPath;
+            if (! file_exists($filePath)) {
+                $this->httpClient->downloadFile($set->getIconUrl(), $filePath);
+            }
+            $set->setIconLocal($filename);
+            $this->entityManager->persist($set);
+        }
+        /** @var \App\Entity\Symbol $symbol */
+        foreach ($this->entityManager->getRepository(\App\Entity\Symbol::class)->findBy(["icon_local"=> null]) as $symbol) {
+            $filename = $symbol->getCode() . '.svg';
+            $filename = preg_replace($specialChars, "", $filename);
+            $publicPath = $this->symbolsIconDir . '/' . $filename;
+            $filePath = $this->projectDir . '/' . $publicPath;
+            if (! file_exists($filePath)) {
+                $this->httpClient->downloadFile($symbol->getIconUrl(), $filePath);
+            }
+            $symbol->setIconLocal($filename);
+            $this->entityManager->persist($symbol);
+        }
+        $this->entityManager->flush();
+    }
+
     /**
      * main function of this service, update tables if fresh data is available
      */
@@ -367,6 +411,9 @@ class ScryfallUpdates {
         $this->truncateTables();
         $this->logger->info("starting card dependencies insertion");
         $this->insertCardDependenciesData();
+        $this->logger->info("retrieve missings icons");
+        $this->retrieveMissingIcons();
+        $this->logger->info("building cache");
         $this->initCache();
 
         $this->logger->info("start of card data insertion");
@@ -386,21 +433,27 @@ class ScryfallUpdates {
             if (! key_exists($scryfallCardObj->rarity, $this->cache["rarity"]) ) {
                 $rarityObj = new \App\Entity\Rarity();
                 $rarityObj->setName($scryfallCardObj->rarity);
+                $rarityObj->setIndexValue($this->aditionnalData->rarities[$scryfallCardObj->rarity]["index_value"]);
+                $rarityObj->setColor($this->aditionnalData->rarities[$scryfallCardObj->rarity]["color"]);
                 $this->entityManager->persist($rarityObj);
                 $this->cache["rarity"][$scryfallCardObj->rarity] = $rarityObj;
             }
-            foreach ($scryfallCardObj->legalities as $legality_type => $legality_value) {
-                if (! key_exists($legality_type, $this->cache["legalityType"]) ) {
-                    $legalityTypeObj = new \App\Entity\LegalityType();
-                    $legalityTypeObj->setName($legality_type);
-                    $this->entityManager->persist($legalityTypeObj);
-                    $this->cache["legalityType"][$legality_type] = $legalityTypeObj;
+            foreach ($scryfallCardObj->legalities as $format => $legality) {
+                if (! key_exists($format, $this->cache["format"]) ) {
+                    $formatObj = new \App\Entity\Format();
+                    $formatObj->setCode($format);
+                    $formatObj->setName(str_replace("_", " ", $format));
+                    $formatObj->setDescription($this->aditionnalData->formats[$format]["description"]);
+                    $this->entityManager->persist($formatObj);
+                    $this->cache["format"][$format] = $formatObj;
                 }
-                if (! key_exists($legality_value, $this->cache["legalityValue"]) ) {
-                    $legalityValueObj = new \App\Entity\LegalityValue();
-                    $legalityValueObj->setName($legality_value);
-                    $this->entityManager->persist($legalityValueObj);
-                    $this->cache["legalityValue"][$legality_value] = $legalityValueObj;
+                if (! key_exists($legality, $this->cache["legality"]) ) {
+                    $legalityObj = new \App\Entity\Legality();
+                    $legalityObj->setCode($legality);
+                    $legalityObj->setName(str_replace("_", " ", $legality));
+                    $legalityObj->setDescription($this->aditionnalData->legalities[$legality]["description"]);
+                    $this->entityManager->persist($legalityObj);
+                    $this->cache["legality"][$legality] = $legalityObj;
                 }
             }
             $this->insertCard($scryfallCardObj);

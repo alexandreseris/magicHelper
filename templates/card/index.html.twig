@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ card.getFaces() | map(x => "#{x.getName()}") | join(', ') }}{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href={{ asset("/css/cardDetail.css") }}>
+{% endblock %}
+
+{% block body %}
+<div id="cardDetailContainer">
+    {# CARD INFOS #}
+    <div id="cardName">{{ card.getFaces() | map(x => "#{x.getName()}") | join(', ') }}</div>
+    <div id="setContainer">
+        <span>Set: </span>
+        {% if card.getSet().getIconLocal() is null %}
+            <img id="setImg" alt={{ card.getSet().getCode() }}>
+        {% else %}
+            <img id="setImg" alt={{ card.getSet().getCode() }} src={{ asset("#{sets_icons_public}/#{card.getSet().getIconLocal()}") }}>
+        {% endif %}
+        <span id="setName">{{ card.getSet().getName() }}</span>
+        <span id="setType">({{ card.getSet().getType().getName() }})</span>
+    </div>
+
+    <div id="legalitiesContainer">
+        <div class="arrayLabel">Legalities</div>
+        {% for legality in card.getLegalities() %}
+            <div class="legalityType">{{ legality.getLegalityType().getName() }}</div>
+            <div class="legalityValue">{{ legality.getLegalityValue().getName() }}</div>
+        {% endfor %}
+    </div>
+
+    <div id="cardInfosContainer">
+        <div id="releasedDate">Released the {{ card.getReleasedDate() | default(card.getSet().getReleasedDate()) | date("Y-m-d") }}</div>
+        <div id="layout">{{ card.getLayout().getCode() }}</div>
+        <div id="rarity">{{ card.getRarity().getName() }}</div>
+
+        <div id="colorIdentity">
+            <div>Color identity</div>
+            {% for colorIdentity in card.getColorIdentity() %}
+                <div>name: {{ colorIdentity.getName() }}</div>
+            {% endfor %}
+        </div>
+
+        <div id="producedMana">
+            <div>Produced Mana</div>
+            {% for producedMana in card.getProducedMana() %}
+                <div>name: {{ producedMana.getIconUrl() }}</div>
+            {% endfor %}
+        </div>
+
+        <div id="related">
+            <div>Related</div>
+            {% for relatedCard in card.getRelated() %}
+                <div>id: {{ relatedCard.getIdScryfall() }}</div>
+            {% endfor %}
+        </div>
+
+
+        <div id="keywords">
+            <div>Keywords</div>
+            {% for keyword in card.getKeywords() %}
+                <div>name: {{ keyword.getName() }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# FACE INFOS #}
+
+    <div id="faceContainer">
+        {% for face in card.getFaces() %}
+            <div>name: {{ face.getName() }}</div>
+            <img class="faceImage" src={{ asset("#{faces_images_public}/#{face.getImageLocal()}") }}>
+            <div>type line: {{ face.getTypeLine() }}</div>
+            <div>oracle text: {{ face.getOracleText() }}</div>
+            <div>printed text: {{ face.getPrintedText() }}</div>
+            <div>power and thoughness {{ face.getPowerValue() }} / {{ face.getToughnessValue() }}</div>
+            <div>artist: {{ face.getArtist().getName() }}</div>
+            {% for color in face.getColors() %}
+                <div>color: {{ color.getName() }}</div>
+            {% endfor %}
+            {% for manacost in face.getManaCosts() %}
+                <div>mana cost: {{ (manacost.getQuantity() > 1) ? manacost.getQuantity() : '' }}{{ manacost.getSymbol().getCode() }}</div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

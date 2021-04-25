@@ -6,15 +6,15 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use App\Service\ScryfallSchema;
+use App\Service\Scryfall\Schema;
 
 class ScryfallSchemaUtility extends Command
 {
 
-    private ScryfallSchema $scryfallService;
+    private Schema $scryfallService;
     protected static $defaultName = "scryfall:schema";
 
-    public function __construct(ScryfallSchema $scryfallService)
+    public function __construct(Schema $scryfallService)
     {
         $this->scryfallService = $scryfallService;
         parent::__construct();

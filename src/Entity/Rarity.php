@@ -19,9 +19,9 @@ class Rarity
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", length=10, nullable=true)
      */
-    private $description;
+    private $color;
 
     /**
      * @ORM\OneToMany(targetEntity=Card::class, mappedBy="rarity")
@@ -50,14 +50,14 @@ class Rarity
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getColor(): ?string
     {
-        return $this->description;
+        return $this->color;
     }
 
-    public function setDescription(?string $description): self
+    public function setColor(?string $color): self
     {
-        $this->description = $description;
+        $this->color = $color;
 
         return $this;
     }

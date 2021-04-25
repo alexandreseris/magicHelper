@@ -14,4 +14,8 @@
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
 
+### dont add scryfall images and icons
+/public/images/magicData/
+
 .vscode
+.pytest_cache

@@ -2,16 +2,21 @@
 
 namespace App\Entity;
 
-use App\Repository\LegalityValueRepository;
+use App\Repository\FormatRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=LegalityValueRepository::class)
+ * @ORM\Entity(repositoryClass=FormatRepository::class)
  */
-class LegalityValue
+class Format
 {
     /**
      * @ORM\Id
+     * @ORM\Column(type="string", length=50)
+     */
+    private $code;
+
+    /**
      * @ORM\Column(type="string", length=50)
      */
     private $name;
@@ -20,6 +25,18 @@ class LegalityValue
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $description;
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
 
     public function getName(): ?string
     {

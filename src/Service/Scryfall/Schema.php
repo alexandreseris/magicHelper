@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Scryfall;
 
 use App\Service\Crawler;
 
-class ScryfallSchema
+class Schema
 {
     private string $scryfallApiDocumentationUrl;
 

@@ -12,7 +12,7 @@ class FaceManaCost
 {
     /**
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity=Face::class)
+     * @ORM\ManyToOne(targetEntity=Face::class, inversedBy="manaCosts")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(nullable=false, name="face_id", referencedColumnName="face_id")
      * })
@@ -26,7 +26,7 @@ class FaceManaCost
      *   @ORM\JoinColumn(nullable=false, name="symbol_id", referencedColumnName="code")
      * })
      */
-    private $symbol_id;
+    private $symbol;
 
     /**
      * @ORM\Column(type="integer")
@@ -45,14 +45,14 @@ class FaceManaCost
         return $this;
     }
 
-    public function getSymbolId(): ?Symbol
+    public function getSymbol(): ?Symbol
     {
-        return $this->symbol_id;
+        return $this->symbol;
     }
 
-    public function setSymbolId(?Symbol $symbol_id): self
+    public function setSymbol(?Symbol $symbol): self
     {
-        $this->symbol_id = $symbol_id;
+        $this->symbol = $symbol;
 
         return $this;
     }

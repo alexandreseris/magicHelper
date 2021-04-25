@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Scryfall;
 
 use DateTime;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Psr\Log\LoggerInterface;
 use App\Service\Crawler;
+use App\Service\HttpClient;
 use JsonMachine\JsonMachine;
 use Doctrine\ORM\EntityManagerInterface;
 
-class ScryfallDataGetter
+class DataGetter
 {
     private string $scryfallTestData;
     private bool $scryfallFileDlSkip;
@@ -18,6 +19,7 @@ class ScryfallDataGetter
     private string $scryfallDateTimeFormat;
     private int $scryfallWaitSecondsBetweenCalls;
 
+    private HttpClient $fileDownloader;
     private HttpClientInterface $httpclient;
     private Crawler $htmlparser;
     private LoggerInterface $logger;
@@ -31,6 +33,7 @@ class ScryfallDataGetter
         string $scryfallDateTimeFormat,
         int $scryfallWaitSecondsBetweenCalls,
 
+        HttpClient $fileDownloader,
         LoggerInterface $logger,
         HttpClientInterface $httpclient,
         Crawler $htmlparser,
@@ -43,6 +46,7 @@ class ScryfallDataGetter
         $this->scryfallDateTimeFormat = $scryfallDateTimeFormat;
         $this->scryfallWaitSecondsBetweenCalls = $scryfallWaitSecondsBetweenCalls;
 
+        $this->fileDownloader = $fileDownloader;
         $this->logger = $logger;
         $this->httpclient = $httpclient;
         $this->htmlparser = $htmlparser;
@@ -216,23 +220,7 @@ class ScryfallDataGetter
 
             if (! $this->scryfallFileDlSkip === true) {
                 $this->logger->debug("update available, downloading file");
-                $fileRequest = $this->httpclient->request("GET", $line["download_uri"]);
-                if ($fileRequest->getStatusCode() >= 400) {
-                    throw new \Exception("failled to download bulk file", 1);
-                }
-                sleep($this->scryfallWaitSecondsBetweenCalls);
-                $tmpFile = tempnam(sys_get_temp_dir(), "scryfallData.json");
-                if ($tmpFile) {
-                    $this->logger->debug('saving to '.$tmpFile);
-                    $fileHandler = fopen($tmpFile, 'w');
-                    foreach ($this->httpclient->stream($fileRequest) as $chunk) {
-                        fwrite($fileHandler, $chunk->getContent());
-                    }
-                    fclose($fileHandler);
-                }
-                else {
-                    throw new \Exception("failed to create temp file " . $tmpFile, 1);   
-                }
+                $tmpFile = $this->fileDownloader->downloadFile($line["download_uri"], "scryfallData.json", true);
             }
 
             $docSize = filesize($tmpFile);

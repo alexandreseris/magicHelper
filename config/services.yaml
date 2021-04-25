@@ -4,6 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+    app.faces_images_public: '/images/magicData/faces'
+    app.sets_icons_public: '/images/magicData/sets'
+    app.symbols_icon_public: '/images/magicData/symbols'
 
 services:
     # default configuration for services in *this* file
@@ -11,11 +14,14 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
+            string $projectDir: '%kernel.project_dir%'
+            string $setsIconDir: '%app.sets_icons_public%'
+            string $symbolsIconDir: '%app.symbols_icon_public%'
             string $scryfallApiUrl: 'https://api.scryfall.com'
             string $scryfallApiDocumentationUrl: 'https://scryfall.com/docs/api'
             string $scryfallDateTimeFormat: 'Y-m-d\Th:i:s.vP'
             string $scryfallDateFormat: 'Y-m-d'
-            int $scryfallWaitSecondsBetweenCalls: 2
+            int $scryfallWaitSecondsBetweenCalls: 1
             array $tablesNotScryfall: ['data_date']
             string $scryfallBulkType: 'oracle_cards'
             bool $scryfallFileDlSkip: '%env(SCRYFALL_FILE_DL_SKIP)%'
@@ -39,10 +45,10 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    App\Service\ScryfallDataGetter:
+    App\Service\Scryfall\DataGetter:
         arguments:
             $scryfallTestData: '%kernel.project_dir%/var/scryfallData.json'
 
-    App\Service\ScryfallUpdates:
+    App\Service\Scryfall\Updates:
         arguments:
             $batchSize: 500
