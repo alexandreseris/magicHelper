@@ -156,7 +156,7 @@ for ind, manaCost in enumerate(manaCostGroups):
 "color" U (('color', True), ('std_mana', True), ('generic_mana', False), ('not_mana', False), ('multiple', False))
 
 category order from first to last, and order inside category:
-    generic: 'X', 'Y', 'Z', 'GENERIC_MANA'
+    generic: 'X', 'Y', 'Z', 'GENERIC_MANA', ½, ∞
     mutli_with_no_mana | mutli_with_color_and_gen | multi_full_color => no way to determine with current data, proposition:
         mutli_with_color_and_gen: same as color
         mutli_with_no_mana: same as color
@@ -164,6 +164,7 @@ category order from first to last, and order inside category:
             for easier sort algo, i'll just follow color order
     colorless: 'C'
     color: 'W', 'U', 'B', 'R', 'G'
+    others (like H[WUBRG])
 """
 
 # python implementation test to validate algo

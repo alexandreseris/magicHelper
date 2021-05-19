@@ -91,12 +91,12 @@ class Face
     /**
      * @ORM\OneToMany(targetEntity=FaceManaCost::class, mappedBy="face")
      */
-    private $manaCosts;
+    private $mana_costs;
 
     public function __construct()
     {
         $this->colors = new ArrayCollection();
-        $this->manaCosts = new ArrayCollection();
+        $this->mana_costs = new ArrayCollection();
     }
 
     public function getFaceId(): ?string
@@ -272,6 +272,6 @@ class Face
      */
     public function getManaCosts(): Collection
     {
-        return $this->manaCosts;
+        return $this->mana_costs;
     }
 }

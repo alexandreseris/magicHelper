@@ -31,7 +31,7 @@ class Rarity
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $indexValue;
+    private $index_value;
 
     public function __construct()
     {
@@ -94,12 +94,12 @@ class Rarity
 
     public function getIndexValue(): ?int
     {
-        return $this->indexValue;
+        return $this->index_value;
     }
 
-    public function setIndexValue(?int $indexValue): self
+    public function setIndexValue(?int $index_value): self
     {
-        $this->indexValue = $indexValue;
+        $this->index_value = $index_value;
 
         return $this;
     }

@@ -1,11 +1,6 @@
 backend:
     data:
-        fix card images url retrieve: if card has face and face has no image, get card's image
-
-        make a service or whatever to deal with mana symbol ordering
-            => should i store data or recompute every time???
-
-    make a good 404 page
+        check errors on the symfony profiler, some entity seems to return errors, it may be broken link between entities
 
 front
     try to apply a filter to set icon to show card rarity if color is available, else juste print the icon

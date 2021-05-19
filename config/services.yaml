@@ -24,7 +24,7 @@ services:
             int $scryfallWaitSecondsBetweenCalls: 1
             array $tablesNotScryfall: ['data_date']
             string $scryfallBulkType: 'oracle_cards'
-            bool $scryfallFileDlSkip: '%env(SCRYFALL_FILE_DL_SKIP)%'
+            bool $scryfallFileDlSkip: '%env(bool:SCRYFALL_FILE_DL_SKIP)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

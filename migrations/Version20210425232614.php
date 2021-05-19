@@ -19,7 +19,28 @@ final class Version20210425232614 extends AbstractMigration
 
     public function up(Schema $schema) : void
     {
-        // this up() migration is auto-generated, please modify it to your needs
+        // i manually droped tables before this migration, so drops added here
+        $this->addSql('DROP TABLE artist');
+        $this->addSql('DROP TABLE card');
+        $this->addSql('DROP TABLE card_colorIdentity');
+        $this->addSql('DROP TABLE card_producedMana');
+        $this->addSql('DROP TABLE card_keyword');
+        $this->addSql('DROP TABLE card_related');
+        $this->addSql('DROP TABLE card_legality');
+        $this->addSql('DROP TABLE color');
+        $this->addSql('DROP TABLE data_date');
+        $this->addSql('DROP TABLE face');
+        $this->addSql('DROP TABLE face_color');
+        $this->addSql('DROP TABLE face_mana_cost');
+        $this->addSql('DROP TABLE format');
+        $this->addSql('DROP TABLE keyword');
+        $this->addSql('DROP TABLE layout');
+        $this->addSql('DROP TABLE legality');
+        $this->addSql('DROP TABLE rarity');
+        $this->addSql('DROP TABLE setOfCard');
+        $this->addSql('DROP TABLE set_type');
+        $this->addSql('DROP TABLE symbol');
+        $this->addSql('DROP TABLE symbol_color');
         $this->addSql('CREATE TABLE artist (name VARCHAR(255) NOT NULL, PRIMARY KEY(name))');
         $this->addSql('CREATE TABLE card (id_scryfall VARCHAR(36) NOT NULL, layout_id VARCHAR(50) NOT NULL, rarity_id VARCHAR(50) NOT NULL, set_id VARCHAR(10) NOT NULL, id_oracle VARCHAR(36) NOT NULL, id_arena INTEGER DEFAULT NULL, released_date DATE DEFAULT NULL, PRIMARY KEY(id_scryfall))');
         $this->addSql('CREATE INDEX IDX_161498D38C22AA1A ON card (layout_id)');

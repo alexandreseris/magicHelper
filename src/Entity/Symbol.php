@@ -65,12 +65,17 @@ class Symbol
     /**
      * @ORM\OneToMany(targetEntity=FaceManaCost::class, mappedBy="symbol")
      */
-    private $faceManaCosts;
+    private $face_mana_costs;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $index_value;
 
     public function __construct()
     {
         $this->colors = new ArrayCollection();
-        $this->faceManaCosts = new ArrayCollection();
+        $this->face_mana_costs = new ArrayCollection();
     }
 
     public function getCode(): ?string
@@ -145,6 +150,18 @@ class Symbol
         return $this;
     }
 
+    public function getIndexValue(): ?int
+    {
+        return $this->index_value;
+    }
+
+    public function setIndexValue(?int $index_value): self
+    {
+        $this->index_value = $index_value;
+
+        return $this;
+    }
+
     /**
      * @return Collection|Color[]
      */
@@ -198,25 +215,25 @@ class Symbol
      */
     public function getFaceManaCosts(): Collection
     {
-        return $this->faceManaCosts;
+        return $this->face_mana_costs;
     }
 
-    public function addFaceManaCost(FaceManaCost $faceManaCost): self
+    public function addFaceManaCost(FaceManaCost $face_mana_costs): self
     {
-        if (!$this->faceManaCosts->contains($faceManaCost)) {
-            $this->faceManaCosts[] = $faceManaCost;
-            $faceManaCost->setSymbol($this);
+        if (!$this->face_mana_costs->contains($face_mana_costs)) {
+            $this->face_mana_costs[] = $face_mana_costs;
+            $face_mana_costs->setSymbol($this);
         }
 
         return $this;
     }
 
-    public function removeFaceManaCost(FaceManaCost $faceManaCost): self
+    public function removeFaceManaCost(FaceManaCost $face_mana_costs): self
     {
-        if ($this->faceManaCosts->removeElement($faceManaCost)) {
+        if ($this->face_mana_costs->removeElement($face_mana_costs)) {
             // set the owning side to null (unless already changed)
-            if ($faceManaCost->getSymbol() === $this) {
-                $faceManaCost->setSymbol(null);
+            if ($face_mana_costs->getSymbol() === $this) {
+                $face_mana_costs->setSymbol(null);
             }
         }
 

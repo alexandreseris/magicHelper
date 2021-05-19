@@ -12,7 +12,7 @@ class FaceManaCost
 {
     /**
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity=Face::class, inversedBy="manaCosts")
+     * @ORM\ManyToOne(targetEntity=Face::class, inversedBy="mana_costs")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(nullable=false, name="face_id", referencedColumnName="face_id")
      * })
@@ -21,7 +21,7 @@ class FaceManaCost
 
     /**
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity=Symbol::class, inversedBy="faceManaCosts")
+     * @ORM\ManyToOne(targetEntity=Symbol::class, inversedBy="face_mana_costs")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(nullable=false, name="symbol_id", referencedColumnName="code")
      * })

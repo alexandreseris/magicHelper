@@ -187,7 +187,7 @@ class DataGetter
             $neddUpdate = true;
             $tmpFile = $this->scryfallTestData;
             $bulkDate = new Datetime();
-            $this->logger->info("skipping dl, using " . $tmpFile . " instead");
+            $this->logger->info("skipping dl (scryfallFileDlSkip is " . print_r($this->scryfallFileDlSkip, true) . "), using " . $tmpFile . " instead");
         } else {
             $response = $this->httpclient->request("GET", $this->scryfallApiUrl . "/bulk-data");
             $content = $response->toArray();
@@ -203,13 +203,16 @@ class DataGetter
                 throw new \Exception("did not find " . $bulkType . " in scryfall's bulks available", 1);
             }
             $lastUpdate = $this->entityManager->getRepository(\App\Entity\DataDate::class)->findAll();
+            $bulkDate = DateTime::createFromFormat($this->scryfallDateTimeFormat, $line["updated_at"]);
+            if ($bulkDate === false) {
+                throw new \Exception("bulk date could not be parsed: format " . $this->scryfallDateTimeFormat . " input date " . $line["updated_at"]);
+            }
             $neddUpdate = false;
             if (count($lastUpdate) == 0) {
                 $neddUpdate = true;
             }
             else {
                 $lastUpdate = $lastUpdate[0];
-                $bulkDate = DateTime::createFromFormat($this->scryfallDateTimeFormat, $line["updated_at"]);
                 $dateDiff = $lastUpdate->getUpdatedAt()->diff($bulkDate);
                 if ($dateDiff->invert == 0) {
                     $neddUpdate = true;

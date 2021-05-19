@@ -21,6 +21,7 @@ class Updates {
     private LoggerInterface $logger;
     private EntityManagerInterface $entityManager;
     private DataGetter $scryfallDataGetter;
+    private SymbolOrder $symbolOrder;
     private HttpClient $httpClient;
 
     private array $cache;
@@ -40,6 +41,7 @@ class Updates {
         LoggerInterface $logger,
         EntityManagerInterface $entityManager,
         DataGetter $scryfallDataGetter,
+        SymbolOrder $symbolOrder,
         HttpClient $httpClient
     ) {
         $this->scryfallDateTimeFormat = $scryfallDateTimeFormat;
@@ -56,6 +58,7 @@ class Updates {
         $this->entityManager = $entityManager;
         $this->scryfallDataGetter = $scryfallDataGetter;
         $this->httpClient = $httpClient;
+        $this->symbolOrder = $symbolOrder;
 
         $this->entityManager->getConnection()->getConfiguration()->setSQLLogger(null);
 
@@ -255,11 +258,11 @@ class Updates {
 
         foreach ($scryfallCard->legalities as $format => $legality) {
             if (key_exists($format, $this->cache['format']) && key_exists($legality, $this->cache['legality'])) {
-                $legality = new \App\Entity\CardLegality();
-                $legality->setFormat($this->cache['format'][$format]);
-                $legality->setLegality($this->cache['legality'][$legality]);
-                $legality->setCard($card);
-                $this->entityManager->persist($legality);
+                $legalityObj = new \App\Entity\CardLegality();
+                $legalityObj->setFormat($this->cache['format'][$format]);
+                $legalityObj->setLegality($this->cache['legality'][$legality]);
+                $legalityObj->setCard($card);
+                $this->entityManager->persist($legalityObj);
             }
         }
 
@@ -278,7 +281,11 @@ class Updates {
             $face->setCard($card);
             $face->setFaceIndex($faceIndex);
             if ( ! is_null($faceScryfall->image_uris) && key_exists("normal", $faceScryfall->image_uris) ) {
+                // the image can be on the face
                 $face->setImageUrl($faceScryfall->image_uris["normal"]);
+            } else if (! is_null($scryfallCard->image_uris) && key_exists("normal", $scryfallCard->image_uris)) {
+                // or on the card
+                $face->setImageUrl($scryfallCard->image_uris["normal"]);
             }
             $face->setName($faceScryfall->name);
             $face->setTypeLine($faceScryfall->type_line);
@@ -363,30 +370,55 @@ class Updates {
     }
 
     private function retrieveMissingIcons() {
-        $specialChars = "/\{|\}|\/|\\/";
+        $removeChars = ["/", "\\", "{", "}"];
+        $specialChars = '/' . implode("|", array_map(function($char) {return preg_quote($char, "/");}, $removeChars)) . '/';
+        
+        $publicPathOnDisk = "/public" . $this->setsIconDir;
+        if (DIRECTORY_SEPARATOR !== "/") {
+            $publicPathOnDisk = str_replace("/", DIRECTORY_SEPARATOR, $publicPathOnDisk);
+        }
         /** @var \App\Entity\Set $set */
         foreach ($this->entityManager->getRepository(\App\Entity\Set::class)->findBy(["icon_local"=> null]) as $set) {
             $filename = $set->getCode() . '.svg';
             $filename = preg_replace($specialChars, "", $filename);
-            $publicPath = $this->setsIconDir . '/' . $filename;
-            $filePath = $this->projectDir . '/' . $publicPath;
+            $filePath = $this->projectDir . $publicPathOnDisk . DIRECTORY_SEPARATOR . $filename;
+            $updatableDiskPath = true;
             if (! file_exists($filePath)) {
-                $this->httpClient->downloadFile($set->getIconUrl(), $filePath);
+                try {
+                    $this->httpClient->downloadFile($set->getIconUrl(), $filePath);
+                } catch (\Exception $e) {
+                    $this->logger->warning("download of " . $set->getIconUrl() . " failed, exception: " . $e);
+                    $updatableDiskPath = false;
+                }
             }
-            $set->setIconLocal($filename);
-            $this->entityManager->persist($set);
+            if ($updatableDiskPath) {
+                $set->setIconLocal($filename);
+                $this->entityManager->persist($set);
+            }
+        }
+
+        $publicPathOnDisk = "/public" . $this->symbolsIconDir;
+        if (DIRECTORY_SEPARATOR !== "/") {
+            $publicPathOnDisk = str_replace("/", DIRECTORY_SEPARATOR, $publicPathOnDisk);
         }
         /** @var \App\Entity\Symbol $symbol */
         foreach ($this->entityManager->getRepository(\App\Entity\Symbol::class)->findBy(["icon_local"=> null]) as $symbol) {
             $filename = $symbol->getCode() . '.svg';
             $filename = preg_replace($specialChars, "", $filename);
-            $publicPath = $this->symbolsIconDir . '/' . $filename;
-            $filePath = $this->projectDir . '/' . $publicPath;
+            $filePath = $this->projectDir . $publicPathOnDisk . DIRECTORY_SEPARATOR . $filename;
+            $updatableDiskPath = true;
             if (! file_exists($filePath)) {
-                $this->httpClient->downloadFile($symbol->getIconUrl(), $filePath);
+                try {
+                    $this->httpClient->downloadFile($symbol->getIconUrl(), $filePath);
+                } catch (\Exception $e) {
+                    $this->logger->warning("download of " . $symbol->getIconUrl() . " failed, exception: " . $e);
+                    $updatableDiskPath = false;
+                }
             }
-            $symbol->setIconLocal($filename);
-            $this->entityManager->persist($symbol);
+            if ($updatableDiskPath) {
+                $symbol->setIconLocal($filename);
+                $this->entityManager->persist($symbol);
+            }
         }
         $this->entityManager->flush();
     }
@@ -411,6 +443,8 @@ class Updates {
         $this->truncateTables();
         $this->logger->info("starting card dependencies insertion");
         $this->insertCardDependenciesData();
+        $this->logger->info("compute symbol order");
+        $this->symbolOrder->sortSymbols();
         $this->logger->info("retrieve missings icons");
         $this->retrieveMissingIcons();
         $this->logger->info("building cache");

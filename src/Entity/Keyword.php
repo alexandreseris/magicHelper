@@ -21,12 +21,12 @@ class Keyword
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isAbility;
+    private $is_ability;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isAction;
+    private $is_action;
 
     /**
      * @ORM\ManyToMany(targetEntity=Card::class, mappedBy="keywords")
@@ -56,24 +56,24 @@ class Keyword
 
     public function getIsAbility(): ?bool
     {
-        return $this->isAbility;
+        return $this->is_ability;
     }
 
-    public function setIsAbility(bool $isAbility): self
+    public function setIsAbility(bool $is_ability): self
     {
-        $this->isAbility = $isAbility;
+        $this->is_ability = $is_ability;
 
         return $this;
     }
 
     public function getIsAction(): ?bool
     {
-        return $this->isAction;
+        return $this->is_action;
     }
 
-    public function setIsAction(bool $isAction): self
+    public function setIsAction(bool $is_action): self
     {
-        $this->isAction = $isAction;
+        $this->is_action = $is_action;
 
         return $this;
     }
