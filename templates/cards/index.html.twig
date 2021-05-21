@@ -1,0 +1,134 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Card Search{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset("/css/cardList.css") }}">
+<link rel="stylesheet" href="{{ asset("/css/sets.css") }}">
+{% endblock %}
+
+{% block javascripts %}
+<script defer src="{{ asset("/js/cardList.js") }}"></script>
+<script defer src="{{ asset("/js/sets.js") }}"></script>
+{% endblock %}
+
+{% block body %}
+<header hidden>
+    <form action="{{ path('cards') }}" id="searchForm" method="POST">
+        <input type="text" name="cardname" placeholder="Card's name">
+
+        <ul id="setContainer">
+            <li>
+                <input class="categoryInput" type="checkbox">
+                <label class="category">Set list</label>
+                <ul class="nested" id="setContainerFirstSub">
+                    {% for settype, years in searcheableFields.setTree %}
+                        <li>
+                            <input class="categoryInput" type="checkbox">
+                            <label class="category">{{ settype }}</label>
+                            <ul class="nested">
+                            {% for year, sets in years %}
+                                <li>
+                                    <input class="categoryInput" type="checkbox">
+                                    <label class="category">{{ year }}</label>
+                                    <ul class="nested">
+                                        {% for setofCard in sets %}
+                                            <li>
+                                                <input type="checkbox" name="setcode[]" value="{{ setofCard.setCode }}">
+                                                <label for="setcode[]">{{ setofCard.setName }}</label>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+        
+        <div class="selectnoscroll">
+            <select name="rarity[]" id="rarity" multiple size="3">
+                {% for rarity in searcheableFields.rarities %}
+                    <option value="{{ rarity.name }}">{{ rarity.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="selectnoscroll">
+            <select name="color[]" id="color" multiple size="3">
+                {% for color in searcheableFields.colors %}
+                    <option class="colorSelectorIcon" value="{{ color.code }}" style="background-image:url({{ asset("#{symbols_icon_public}/#{color.icon_local}") }});">
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <input type="submit" value="Go!">
+        <input type="reset" value="Reset">
+    </form>
+</header>
+
+<button id="toogleSearch">Toogle search menu</button>
+
+<main class="resultList">
+    {% for header in headers %}
+        <span class="cell headerResult">{{ header }}</span>
+    {% endfor %}
+    {% for card in cards %}
+
+        <a class="cell" href="{{ path("card", {"card_id": card.id}) }}">{{ card.name }}</a>
+
+        {% if card.seticon is null %}
+            <span class="cell">{{ card.setname }}</span>
+        {% else %}
+            <span class="cell">
+                <img
+                    class="icon"
+                    title="{{ card.setname }}"
+                    alt="{{ card.setname }}"
+                    src="{{ asset("#{sets_icons_public}/#{card.seticon}") }}"
+                >
+            </span>
+        {% endif %}
+
+        <span class="cell">{{ card.rarity.name|title }}</span>
+
+        <span class="cell">
+            {% for color in card.colors %}
+                    <img
+                        class="icon"
+                        title="{{ color.name }}"
+                        alt="{{ color.name }}"
+                        src="{{ asset("#{symbols_icon_public}/#{color.symbol}") }}"
+                    >
+            {% endfor %}
+        </span>
+
+    {% endfor %}
+</main>
+
+<footer>
+    <div id="pageNavigation" title="{{ cardCount }} cards found, the current page contains {{ currentCardCount }} cards">
+
+        {% for page in firstPages %}
+            <a class="pageLink" href="{{ path('cards', {'limit': currentLimit, 'pageNumber': page}) }}">{{ page }}</a>
+        {% endfor %}
+        <a class="pageLink" disabled="disabled">{{ currentPage }}</a>
+        {% for page in lastPages %}
+            <a class="pageLink" href="{{ path('cards', {'limit': currentLimit, 'pageNumber': page}) }}">{{ page }}</a>
+        {% endfor %}
+
+        <form action="{{ path('cards') }}" method="GET" id="limitForm">
+            <span>display
+                <select name="limit" id="limit" onchange="this.form.submit()">
+                    {% for limit in limitAvailable %}
+                    <option value="{{ limit }}" {% if limit == currentLimit %}selected{% endif %}>{{ limit }}</option>
+                    {% endfor %}
+                </select>
+                cards per page
+            </span>
+        </form>
+
+    </div>
+</footer>
+{% endblock %}

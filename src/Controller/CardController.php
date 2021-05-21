@@ -59,7 +59,10 @@ class CardController extends AbstractController
                 } else {
                     $filename = $face->getFaceId() . '.jpg';
                     $publicPath = $this->getParameter("app.faces_images_public") . '/' . $filename;
-                    $filePath = $this->getParameter("kernel.project_dir") . '/' . $publicPath;
+                    $filePath = $this->getParameter("kernel.project_dir") . "/public" . $publicPath;
+                    if (DIRECTORY_SEPARATOR !== "/") {
+                        $filePath = str_replace("/", DIRECTORY_SEPARATOR, $filePath);
+                    }
                     $this->logger->debug(
                         'image not found for face id: ' . $face->getFaceId() . " " .
                         'begin download from ' . $face->getImageUrl() . " " .

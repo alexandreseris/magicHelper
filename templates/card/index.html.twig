@@ -3,7 +3,7 @@
 {% block title %}{{ card.getFaces() | map(x => "#{x.getName()}") | join(', ') }}{% endblock %}
 
 {% block stylesheets %}
-<link rel="stylesheet" href={{ asset("/css/cardDetail.css") }}>
+<link rel="stylesheet" href="{{ asset("/css/cardDetail.css") }}">
 {% endblock %}
 
 {% block body %}
@@ -13,9 +13,9 @@
     <div id="setContainer">
         <span>Set: </span>
         {% if card.getSet().getIconLocal() is null %}
-            <img id="setImg" alt={{ card.getSet().getCode() }}>
+            <img id="setImg" alt="{{ card.getSet().getCode() }}">
         {% else %}
-            <img id="setImg" alt={{ card.getSet().getCode() }} src={{ asset("#{sets_icons_public}/#{card.getSet().getIconLocal()}") }}>
+            <img id="setImg" alt="{{ card.getSet().getCode() }}" src="{{ asset("#{sets_icons_public}/#{card.getSet().getIconLocal()}") }}">
         {% endif %}
         <span id="setName">{{ card.getSet().getName() }}</span>
         <span id="setType">({{ card.getSet().getType().getName() }})</span>
@@ -24,8 +24,8 @@
     <div id="legalitiesContainer">
         <div class="arrayLabel">Legalities</div>
         {% for legality in card.getLegalities() %}
-            <div class="legalityType">{{ legality.getLegalityType().getName() }}</div>
-            <div class="legalityValue">{{ legality.getLegalityValue().getName() }}</div>
+            <div class="legalityType">{{ legality.getFormat().getName() }}</div>
+            <div class="legalityValue">{{ legality.getLegality().getName() }}</div>
         {% endfor %}
     </div>
 
@@ -69,7 +69,7 @@
     <div id="faceContainer">
         {% for face in card.getFaces() %}
             <div>name: {{ face.getName() }}</div>
-            <img class="faceImage" src={{ asset("#{faces_images_public}/#{face.getImageLocal()}") }}>
+            <img class="faceImage" src="{{ asset("#{faces_images_public}/#{face.getImageLocal()}") }}">
             <div>type line: {{ face.getTypeLine() }}</div>
             <div>oracle text: {{ face.getOracleText() }}</div>
             <div>printed text: {{ face.getPrintedText() }}</div>

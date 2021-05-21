@@ -1,0 +1,43 @@
+/* Remove default bullets */
+ul, #myUL {
+  list-style-type: none;
+}
+
+/* Remove margins and padding from the parent ul */
+#myUL {
+  margin: 0;
+  padding: 0;
+}
+
+/* Style the category/arrow */
+.category {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+}
+
+/* Create the category/arrow with a unicode, and style it */
+.category::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Rotate the category/arrow icon when clicked on (using JavaScript) */
+.category-down::before {
+  transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+.nested {
+  display: none;
+}
+
+/* Show the nested list when the user clicks on the category/arrow (with JavaScript) */
+.active {
+  display: block;
+}
+
+.categoryInput {
+  margin-right: 0.3rem;
+}

@@ -24,7 +24,7 @@ class Color
     private $name;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Symbol::class, mappedBy="color_id")
+     * @ORM\ManyToMany(targetEntity=Symbol::class, mappedBy="colors")
      * @ORM\JoinTable(name="symbol_color",
      *   joinColumns={@ORM\JoinColumn(name="color_id", referencedColumnName="code")},
      *   inverseJoinColumns={@ORM\JoinColumn(name="symbol_id", referencedColumnName="code")}

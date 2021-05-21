@@ -1,0 +1,88 @@
+/* VARS */
+:root {
+    --footerH: 2.5rem;
+}
+
+/* MAIN PARTS */
+
+header {
+    text-align: center;
+    margin: 1rem;
+}
+
+main {
+    margin-bottom: calc(var(--footerH) * 1.5);
+}
+
+.resultList {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.cell {
+    text-align: center;
+}
+
+.icon {
+    width: auto;
+    height: 1rem;
+}
+
+.headerResult{
+    border-bottom: 1px solid var(--secondaryColor);
+    border-top: 1px solid var(--secondaryColor);
+    font-style: italic;
+}
+
+footer {
+    height: var(--footerH);
+    width: 100%;
+    bottom: 0;
+    position: fixed;
+    background-color: var(--mainColor);
+    margin-top: auto;
+    text-align: center;
+}
+
+.colorSelectorIcon {
+    background-repeat: no-repeat;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+#limitForm {
+    display: inline;
+}
+
+
+#searchForm {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    height: 5rem;
+}
+
+#searchForm input[type=reset]:hover, #searchForm input[type=reset]:focus {
+    background-color: var(--warningColor);
+}
+
+#toogleSearch {
+    text-align: center;
+    width: 100%;
+}
+
+#setContainerFirstSub {
+    z-index: 10;
+    position: relative;
+    top: 0rem;
+    left: 0rem;
+}
+
+#setContainer * {
+    text-align: left;
+}
+
+#toogleSearch:hover, #toogleSearch:focus {
+    background-color: transparent;
+    color: var(--secondaryColor);
+}

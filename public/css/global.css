@@ -1,6 +1,74 @@
-* {
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+:root {
+  --mainColor: rgb(255, 255, 255);
+  --secondaryColor: rgb(31, 31, 31);
+  --accentColor: rgb(164, 194, 252);
+  --warningColor: rgb(248, 156, 128);
+  --errorColor: rgb(207, 91, 91);
 }
+
+/* FONTS, COLORS */
+*:not(.sf-toolbarreset *),
+*:not(.sf-toolbarreset *)::before,
+*:not(.sf-toolbarreset *)::after {
+  box-sizing: border-box;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: var(--mainColor);
+  color: var(--secondaryColor);
+}
+
+/* ADITIONNAL RESETS */
+input, select {
+  outline: none;
+  border: none;
+  border-bottom: 1px solid var(--secondaryColor);
+  border-left: 1px solid var(--secondaryColor);
+}
+
+.selectnoscroll {
+  display: inline-block;
+  vertical-align: top;
+  overflow: hidden;
+  border-bottom: 1px solid var(--secondaryColor);
+  border-left: 1px solid var(--secondaryColor);
+}
+.selectnoscroll select {
+  padding: 5px;
+  margin-right: -20px;
+  border: none;
+}
+
+/* BUTTON DESIGN */
+input[type=submit], input[type=button], input[type=reset], button {
+  display: inline-block;
+  border: none;
+  text-decoration: none;
+  background: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background 250ms ease-in-out, transform 150ms ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border-radius: 1rem;
+}
+
+input[type=submit]:hover, input[type=button]:hover, input[type=reset]:hover, button:hover,
+input[type=submit]:focus, input[type=button]:focus, input[type=reset]:focus, button:focus {
+  background: var(--accentColor);
+  color: var(--mainColor);
+}
+
+input[type=submit]:focus, input[type=button]:focus, button:focus {
+  outline: 1px solid var(--mainColor);
+  outline-offset: -1px;
+}
+
+input[type=submit]:active, input[type=button]:active, input[type=reset]:active, button:active {
+  transform: scale(0.99);
+}
+
+/* DIV */
 
 img[alt] {
     font-style: italic;
