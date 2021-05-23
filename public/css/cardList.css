@@ -29,8 +29,8 @@ main {
 }
 
 .headerResult{
-    border-bottom: 1px solid var(--secondaryColor);
-    border-top: 1px solid var(--secondaryColor);
+    border-bottom: 1px solid var(--fontColor);
+    border-top: 1px solid var(--fontColor);
     font-style: italic;
 }
 
@@ -84,5 +84,15 @@ footer {
 
 #toogleSearch:hover, #toogleSearch:focus {
     background-color: transparent;
-    color: var(--secondaryColor);
+    color: var(--fontColor);
+}
+
+.pageLink {
+    border: 1px solid var(--fontColor);
+    text-decoration: none;
+}
+
+.pageLink:not([href]) {
+    background-color: var(--fontColor);
+    color: var(--mainColor);
 }

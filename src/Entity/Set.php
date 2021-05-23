@@ -156,4 +156,10 @@ class Set
 
         return $this;
     }
+
+    // virtual column
+    public function getYear(): string
+    {
+        return $this->getReleasedDate()->format("Y");
+    }
 }

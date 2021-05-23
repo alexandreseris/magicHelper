@@ -15,7 +15,7 @@
 {% block body %}
 <header hidden>
     <form action="{{ path('cards') }}" id="searchForm" method="POST">
-        <input type="text" name="cardname" placeholder="Card's name">
+        <input type="text" name="cardname" placeholder="Card's name" value="{{ searchFilters.cardname }}">
 
         <ul id="setContainer">
             <li>
@@ -34,7 +34,12 @@
                                     <ul class="nested">
                                         {% for setofCard in sets %}
                                             <li>
-                                                <input type="checkbox" name="setcode[]" value="{{ setofCard.setCode }}">
+                                                <input
+                                                    type="checkbox"
+                                                    name="setcode[]"
+                                                    value="{{ setofCard.setCode }}"
+                                                    {% if setofCard.setCode in searchFilters.setcode %} checked {% endif %}
+                                                >
                                                 <label for="setcode[]">{{ setofCard.setName }}</label>
                                             </li>
                                         {% endfor %}
@@ -51,20 +56,41 @@
         <div class="selectnoscroll">
             <select name="rarity[]" id="rarity" multiple size="3">
                 {% for rarity in searcheableFields.rarities %}
-                    <option value="{{ rarity.name }}">{{ rarity.name }}</option>
+                    <option
+                        value="{{ rarity.name }}"
+                        {% if rarity.name in searchFilters.rarity %} selected {% endif %}
+                    >
+                        {{ rarity.name }}
+                    </option>
                 {% endfor %}
             </select>
         </div>
         <div class="selectnoscroll">
             <select name="color[]" id="color" multiple size="3">
                 {% for color in searcheableFields.colors %}
-                    <option class="colorSelectorIcon" value="{{ color.code }}" style="background-image:url({{ asset("#{symbols_icon_public}/#{color.icon_local}") }});">
-                    </option>
+                    {% if color == "" %}
+                        <option
+                            class="colorSelectorIcon"
+                            value="{{ color }}"
+                            title="No color identity"
+                            {% if color in searchFilters.color %} selected {% endif %}
+                        >
+                        </option>
+                    {% else %}
+                        <option
+                            class="colorSelectorIcon"
+                            value="{{ color.code }}"
+                            title="{{ color.name }}"
+                            style="background-image:url({{ asset("#{symbols_icon_public}/#{color.icon_local}") }});"
+                            {% if color.code in searchFilters.color %} selected {% endif %}
+                        >
+                        </option>
+                    {% endif %}
                 {% endfor %}
             </select>
         </div>
-        <input type="submit" value="Go!">
-        <input type="reset" value="Reset">
+        <input type="submit" value="Search">
+        <input type="reset" value="Delete values" id="delform">
     </form>
 </header>
 
@@ -76,30 +102,33 @@
     {% endfor %}
     {% for card in cards %}
 
-        <a class="cell" href="{{ path("card", {"card_id": card.id}) }}">{{ card.name }}</a>
+        <a class="cell" href="{{ path("card", {"card_id": card.getIdScryfall() }) }}">{{ card.getName() }}</a>
+        <!-- {% for face in card.getFaces() %}
+        <div>{{ face.getName() }}</div>
+        {% endfor %} -->
 
-        {% if card.seticon is null %}
-            <span class="cell">{{ card.setname }}</span>
+        {% if card.getSet().getIconLocal() is null %}
+            <span class="cell">{{ card.getSet().getName() }}</span>
         {% else %}
             <span class="cell">
                 <img
                     class="icon"
-                    title="{{ card.setname }}"
-                    alt="{{ card.setname }}"
-                    src="{{ asset("#{sets_icons_public}/#{card.seticon}") }}"
+                    title="{{ card.getSet().getName() }} ({{ card.getSet().getType().getName() }}, {{ card.getSet().getYear() }})"
+                    alt="{{ card.getSet().getName() }}"
+                    src="{{ asset("#{sets_icons_public}/#{card.getSet().getIconLocal()}") }}"
                 >
             </span>
         {% endif %}
 
-        <span class="cell">{{ card.rarity.name|title }}</span>
+        <span class="cell">{{ card.getRarity().getName()|title }}</span>
 
         <span class="cell">
-            {% for color in card.colors %}
+            {% for color in card.getColorIdentity() %}
                     <img
                         class="icon"
-                        title="{{ color.name }}"
-                        alt="{{ color.name }}"
-                        src="{{ asset("#{symbols_icon_public}/#{color.symbol}") }}"
+                        title="{{ color.getName() }}"
+                        alt="{{ color.getName() }}"
+                        src="{{ asset("#{symbols_icon_public}/#{color.getSymbols()[0].getIconLocal()}") }}"
                     >
             {% endfor %}
         </span>
@@ -108,21 +137,21 @@
 </main>
 
 <footer>
-    <div id="pageNavigation" title="{{ cardCount }} cards found, the current page contains {{ currentCardCount }} cards">
-
-        {% for page in firstPages %}
-            <a class="pageLink" href="{{ path('cards', {'limit': currentLimit, 'pageNumber': page}) }}">{{ page }}</a>
-        {% endfor %}
-        <a class="pageLink" disabled="disabled">{{ currentPage }}</a>
-        {% for page in lastPages %}
-            <a class="pageLink" href="{{ path('cards', {'limit': currentLimit, 'pageNumber': page}) }}">{{ page }}</a>
+    <div id="pageNavigation" title="{{ pageInfos.resultCardCount }} cards found, the current page contains {{ pageInfos.pageCardCount }} cards">
+        {% for page in pageInfos.pagesNavigation %}
+            <a
+                class="pageLink"
+                {% if page != pageInfos.pageNumber %} href="{{ path('cards', {'limit': pageInfos.limit, 'pageNumber': page}) }}" {% endif %}
+            >
+            {{ page }}
+            </a>
         {% endfor %}
 
         <form action="{{ path('cards') }}" method="GET" id="limitForm">
             <span>display
                 <select name="limit" id="limit" onchange="this.form.submit()">
-                    {% for limit in limitAvailable %}
-                    <option value="{{ limit }}" {% if limit == currentLimit %}selected{% endif %}>{{ limit }}</option>
+                    {% for limitAvailable in pageInfos.limitsAvailable %}
+                        <option value="{{ limitAvailable }}" {% if limitAvailable == pageInfos.limit %}selected{% endif %}>{{ limitAvailable }}</option>
                     {% endfor %}
                 </select>
                 cards per page

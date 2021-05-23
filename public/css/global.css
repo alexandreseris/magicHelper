@@ -1,6 +1,6 @@
 :root {
   --mainColor: rgb(255, 255, 255);
-  --secondaryColor: rgb(31, 31, 31);
+  --fontColor: rgb(31, 31, 31);
   --accentColor: rgb(164, 194, 252);
   --warningColor: rgb(248, 156, 128);
   --errorColor: rgb(207, 91, 91);
@@ -13,23 +13,23 @@
   box-sizing: border-box;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   background-color: var(--mainColor);
-  color: var(--secondaryColor);
+  color: var(--fontColor);
 }
 
 /* ADITIONNAL RESETS */
 input, select {
   outline: none;
   border: none;
-  border-bottom: 1px solid var(--secondaryColor);
-  border-left: 1px solid var(--secondaryColor);
+  border-bottom: 1px solid var(--fontColor);
+  border-left: 1px solid var(--fontColor);
 }
 
 .selectnoscroll {
   display: inline-block;
   vertical-align: top;
   overflow: hidden;
-  border-bottom: 1px solid var(--secondaryColor);
-  border-left: 1px solid var(--secondaryColor);
+  border-bottom: 1px solid var(--fontColor);
+  border-left: 1px solid var(--fontColor);
 }
 .selectnoscroll select {
   padding: 5px;

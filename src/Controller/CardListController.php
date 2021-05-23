@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,14 +35,19 @@ class CardListController extends AbstractController {
         // need to pass this as opts in configuration
         $defaultLimit = 20;
         $maxLimit = 100;
-        $limitAvailable = [20, 50, 100];
-        $pageRangeDisplay = 5;
+        $limitsAvailable = [20, 50, 100];
+        $defaultPostFields = [
+            "cardname" => "",
+            "setcode" => [],
+            "rarity" => [],
+            "color" => []
+        ];
 
         // if the user specified a limit and != from session, save the limit in session, else take the session or default
-        $limit = $request->query->getInt("limit", -1);
-        $sessionLimit = $session->get("limit", -1);
-        if ($limit === -1) {
-            if ($sessionLimit === -1) {
+        $limit = $request->query->getInt("limit", 0);
+        $sessionLimit = intval($session->get("limit", 0));
+        if ($limit === 0) {
+            if ($sessionLimit === 0) {
                 $limit = $defaultLimit;
                 $session->set("limit", $defaultLimit);
             } else {
@@ -111,49 +117,98 @@ class CardListController extends AbstractController {
             ->getQuery()
             ->getResult()
         ;
+        // adding a pseudo null value to match card without color identity
+        $colors[] = "";
+
+        if ($request->isMethod("GET")) {
+            $searchFilters = $session->get("searchFilters", $defaultPostFields);
+        } else {
+            $searchFilters = $request->request->all();
+            $searchFilters = array_merge($defaultPostFields, $searchFilters);
+            if (
+                gettype($searchFilters['cardname']) !== "string" ||
+                gettype($searchFilters['setcode']) !== "array" ||
+                gettype($searchFilters['rarity']) !== "array" ||
+                gettype($searchFilters['color']) !== "array"
+                ) {
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException("parameters of wrong types!");
+            }
+            $session->set("searchFilters", $searchFilters);
+        }
 
         $qb = $this->entityManager->createQueryBuilder();
 
         $whereBuild = $qb->expr()->andX();
         $whereParams = [];
 
-        if ($request->isMethod("GET")) {
-            $requestParams = $session->get("searchFilters", []);
-        } else {
-            $requestParams = $request->request->all();
-            $session->set("searchFilters", $requestParams);
-        }
-
-        $cardnameFilter = $requestParams['cardname'] ?? null;
-        if (!is_null($cardnameFilter) && '' !== $cardnameFilter) {
-            $cardnameFilter = '%'.$cardnameFilter.'%';
-            $whereBuild->add($qb->expr()->like('LOWER(faces.name)', ':cardname'));
-            $whereParams['cardname'] = strtolower($cardnameFilter);
-        }
-        $setsFilter = $requestParams['setcode'] ?? null;
-        if (!is_null($setsFilter)) {
-            $whereBuild->add($qb->expr()->in('setofcard.code', ':setcode'));
-            $whereParams['setcode'] = $setsFilter;
-        }
-        $rarirtyFilter = $requestParams['rarity'] ?? null;
-        if (!is_null($rarirtyFilter)) {
-            $whereBuild->add($qb->expr()->in('rarity.name', ':rarity'));
-            $whereParams['rarity'] = $rarirtyFilter;
-        }
-        $colorFilter = $requestParams['color'] ?? null;
-        if (!is_null($colorFilter)) {
-            $whereBuild->add($qb->expr()->in('color_identity.code', ':color'));
-            $whereParams['color'] = $colorFilter;
-        }
-
-
         $qb
             ->from(\App\Entity\Card::class, "card")
             ->join("card.set", "setofcard")
             ->join("card.rarity", "rarity")
-            ->join("card.color_identity", "color_identity")
-            ->join("color_identity.symbols", "symbols")
             ->join("card.faces", "faces")
+        ;
+
+
+        $cardnameFilter = $searchFilters['cardname'];
+        if ($cardnameFilter !== '') {
+            $cardnameFilter = '%' . strtolower($cardnameFilter) . '%';
+            // little trick: the page return card, but name is on the face side
+            // to avoid some face to be excluded,  a subquery is used
+            $subQuery = $this->entityManager->createQueryBuilder()
+                ->from(\App\Entity\Face::class, "subFaces")
+                ->andWhere("subFaces.card = card.id_scryfall")
+                ->andWhere("LOWER(subFaces.name) LIKE :cardname")
+                ->select(["subFaces"])
+                ->getDQL()
+            ;
+            $whereParams['cardname'] = $cardnameFilter;
+            $whereBuild->add($qb->expr()->exists($subQuery));
+        }
+
+        $setsFilter = $searchFilters['setcode'];
+        if (count($setsFilter) > 0) {
+            $whereBuild->add($qb->expr()->in('setofcard.code', ':setcode'));
+            $whereParams['setcode'] = $setsFilter;
+        }
+
+        $rarirtyFilter = $searchFilters['rarity'];
+        if (count($rarirtyFilter) > 0) {
+            $whereBuild->add($qb->expr()->in('rarity.name', ':rarity'));
+            $whereParams['rarity'] = $rarirtyFilter;
+        }
+
+        $colorFilter = $searchFilters['color'];
+        if (count($colorFilter) > 0) {
+            if (in_array("", $colorFilter)) {
+                // dealing with cards having no color
+                $qb
+                    ->leftJoin("card.color_identity", "color_identity")
+                    ->leftJoin("color_identity.symbols", "symbols");
+                $values = array_filter($colorFilter, function($item) {
+                    return $item !== "";
+                });
+                if (count($values) > 0) {
+                    $whereBuild->add(
+                        $qb->expr()->orX(
+                            $qb->expr()->in('color_identity.code', ':color'),
+                            $qb->expr()->isNull('color_identity.code')
+                        )
+                    );
+                    $whereParams['color'] = $colorFilter;
+                } else {
+                    $whereBuild->add($qb->expr()->isNull('color_identity.code'));
+                }
+            } else {
+                $qb
+                    ->join("card.color_identity", "color_identity")
+                    ->join("color_identity.symbols", "symbols")
+                ;
+                $whereBuild->add($qb->expr()->in('color_identity.code', ':color'));
+                $whereParams['color'] = $colorFilter;
+            }
+        }
+
+        $qb
             ->select(["card", "setofcard", "rarity", "color_identity", "symbols", "faces"])
             ->addorderBy($orderby, $order)
             ->setMaxResults($limit)
@@ -164,8 +219,14 @@ class CardListController extends AbstractController {
             $qb->setParameters($whereParams);
         }
         $query = $qb->getQuery();
+
+        $this->logger->info("----QUERY PRINT----");
+        $this->logger->info($query->getDQL());
+        $this->logger->info(print_r($query->getParameters(), true));
+        $this->logger->info("----END QUERY PRINT----");
+
         $cards = new Paginator($query, $fetchJoinCollection = true);
-        $cardCount = count($cards);
+        $resultCardCount = count($cards);
 
         $result = [];
         /** @var \App\Entity\Card $card */
@@ -208,36 +269,23 @@ class CardListController extends AbstractController {
             ];
         }
 
-        // this probably could be simplified !
-        $totalNumberPage = intdiv($cardCount, $limit);
-        if ($totalNumberPage % $limit !== 0) {
-            $totalNumberPage += 1;
-        } elseif ($totalNumberPage < $limit) {
-            $totalNumberPage = 1;
+        $totalPagesNumber = intdiv($resultCardCount, $limit);
+        if ($totalPagesNumber % $limit !== 0) {
+            $totalPagesNumber += 1;
+        } elseif ($totalPagesNumber < $limit) {
+            $totalPagesNumber = 1;
         }
 
-        $firstPages = [];
-        if ($pageNumber !== 1) {
-            $firstPages[] = 1;
-        }
-        if ($pageNumber > 1 && $pageNumber <= $totalNumberPage) {
-            if ($pageNumber > $pageRangeDisplay) {
-                $firstPages = array_merge($firstPages, range($pageNumber - $pageRangeDisplay + 1, $pageNumber - 1));
-            } else {
-                $firstPages = range(max([$pageNumber - $pageRangeDisplay, 1]), $pageNumber - 1);
-            }
-            array_reverse($firstPages);
-        }
-
-        $lastPages = [];
-        if ($pageNumber !== $totalNumberPage) {
-            $lastPages[] = $totalNumberPage;
-        }
-        if ($pageNumber < $totalNumberPage) {
-            if ($pageNumber < $totalNumberPage - $pageRangeDisplay) {
-                $lastPages = array_merge(range($pageNumber + 1, $pageNumber + $pageRangeDisplay - 1), $lastPages);
-            } else {
-                $lastPages = range($pageNumber + 1, min([$pageNumber + $pageRangeDisplay, $totalNumberPage]));
+        $pagesNavigation = [1];
+        if ($totalPagesNumber > 1) {
+            $pagesNavigation = array_merge(
+                $pagesNavigation,
+                range(
+                    max([$pageNumber - 3, 2]), min([$pageNumber + 3, $totalPagesNumber])
+                )
+            );
+            if (! in_array($totalPagesNumber, $pagesNavigation)) {
+                $pagesNavigation[] = $totalPagesNumber;
             }
         }
 
@@ -248,16 +296,17 @@ class CardListController extends AbstractController {
                 "rarities" => $rarities,
                 "colors" => $colors
             ],
+            "searchFilters" => $searchFilters,
             "headers" => $headers,
-            "cards" => $result,
-            "currentLimit" => $limit,
-            "cardCount" => $cardCount,
-            "currentCardCount" => count($result),
-            "currentPage" => $pageNumber,
-            "totalNumberPage" => $totalNumberPage,
-            "firstPages" => $firstPages,
-            "lastPages" => $lastPages,
-            "limitAvailable" => $limitAvailable
+            "cards" => $cards,
+            "pageInfos" => [
+                "limit" => $limit,
+                "limitsAvailable" => $limitsAvailable,
+                "resultCardCount" => $resultCardCount,
+                "pageCardCount" => count($result),
+                "pageNumber" => $pageNumber,
+                "pagesNavigation" => $pagesNavigation,
+            ]
         ]);
     }
 }

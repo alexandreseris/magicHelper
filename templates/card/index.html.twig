@@ -69,7 +69,7 @@
     <div id="faceContainer">
         {% for face in card.getFaces() %}
             <div>name: {{ face.getName() }}</div>
-            <img class="faceImage" src="{{ asset("#{faces_images_public}/#{face.getImageLocal()}") }}">
+            <img class="faceImage" src="{{ face.getImageUrl() }}" alt="no image available :(">
             <div>type line: {{ face.getTypeLine() }}</div>
             <div>oracle text: {{ face.getOracleText() }}</div>
             <div>printed text: {{ face.getPrintedText() }}</div>

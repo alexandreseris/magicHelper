@@ -347,4 +347,14 @@ class Card
         return $this;
     }
 
+    // virtual column
+    public function getName(): string
+    {
+        $facesName = [];
+        foreach ($this->getFaces() as $face) {
+            $facesName[] = $face->getName();
+        }
+        return implode(" - ", $facesName);
+    }
+
 }

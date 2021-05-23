@@ -1,16 +1,16 @@
-for (const toggler of document.getElementsByClassName("category")) {
+document.querySelectorAll(".category").forEach(toggler => {
   toggler.addEventListener("click", function() {
     this.parentElement.querySelector(".nested").classList.toggle("active");
     this.classList.toggle("category-down");
   });
-}
+})
 
 
-for (const categoryInput of document.getElementsByClassName("categoryInput")) {
+document.querySelectorAll(".categoryInput").forEach(categoryInput => {
   categoryInput.addEventListener("change", function(event) {
     let checkState = event.target.checked
-    for (let sibling of event.target.parentElement.querySelectorAll("input")) {
+    event.target.parentElement.querySelectorAll("input").forEach(sibling => {
       sibling.checked = checkState
-    }
+    })
   })
-}
+})
