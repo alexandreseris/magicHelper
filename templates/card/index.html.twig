@@ -1,15 +1,98 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ card.getFaces() | map(x => "#{x.getName()}") | join(', ') }}{% endblock %}
+{% block title %}{{ card.getName() }}{% endblock %}
 
 {% block stylesheets %}
+<link rel="stylesheet" href="{{ asset("/css/belerenFont.css") }}">
+<link rel="stylesheet" href="{{ asset("/css/linuxLibertineFont.css") }}">
 <link rel="stylesheet" href="{{ asset("/css/cardDetail.css") }}">
 {% endblock %}
 
 {% block body %}
+
+{% for face in card.getFaces() %}
+    <div id="cardContainer">
+        <div id="cardInnerBorder">
+            <div id="cardBackgroundColor">
+                <div id="cardContent">
+                    <div id="cardHeaderOutterBorder">
+                        <div id="cardHeader">
+                            <div id="cardHeaderInnerShadow">
+                                <div id="cardName">{{ card.getName() }}</div>
+                                <div id="cardMana">
+                                    {% for mana in face.getManaCosts() %}
+                                        <span>
+                                            {% if mana.getQuantity() > 1 %}{{ mana.getQuantity() }}{% endif %}
+                                            <img class="cardManaIcon" alt="{{ mana.getSymbol().getCode() }}" title="{{ mana.getSymbol().getCode() }}" src="{{ asset("#{symbols_icon_public}/#{mana.getSymbol().getIconLocal()}") }}">
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="cardImageOutterBorder">
+                        <div id="cardImage">
+                            {# <img src="{{ face.getImageUrl() }}" alt=""> #}
+                            <img src="https://c1.scryfall.com/file/scryfall-cards/art_crop/front/1/8/18c0b3b3-bb62-42c5-9869-386af0540a9b.jpg?1576384496" alt="">
+                        </div>
+                    </div>
+                    <div id="card2ndHeaderOutterBorder">
+                        <div id="card2ndHeader">
+                            <div id="card2ndHeaderInnerShadow">
+                                <div id="cardTypeline">{{ face.getTypeLine() }}</div>
+                                <div id="cardSet">
+                                    <img class="cardSetIcon" alt="{{ card.getSet().getCode() }}" title="{{ card.getSet().getCode() }}" src="{{ asset("#{sets_icons_public}/#{card.getSet().getIconLocal()}") }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="cardTextBoxBorder">
+                        <div id="cardTextBox">
+                            <div id="cardText">{{ face.getOracleText()|nl2br }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if face.getPowerValue() is not null or face.getPowerValue() is not null %}
+                <div id="cardStatsBorder">
+                    <div id="cardStats">
+                        {{ face.getPowerValue() }} / {{ face.getToughnessValue() }}
+                </div>
+                </div>
+            {% endif %}
+            <div id="cardMeta">
+                <div id="cardArtist">{{ face.getArtist().getName() }}</div>
+                <div id="cardCopyrigth"><a href="https://magic.wizards.com">™ &amp; © Wizzards of the Coast</a></div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<div id="imgcontainertest">
+    {# <img id="imgmodel" src="{{ card.getFaces()[0].getImageUrl() }}" alt=""> #}
+    {# <img id="imgmodel2" src="https://c1.scryfall.com/file/scryfall-cards/normal/front/0/6/0647feeb-ad7a-40c7-830f-f307ba8339ad.jpg?1562730877" alt="">
+    <img id="imgmodel3" src="https://c1.scryfall.com/file/scryfall-cards/normal/front/0/8/08050607-b558-4f99-b716-bbbab54e9b68.jpg?1562730962" alt="">
+    <img id="imgmodel4" src="https://c1.scryfall.com/file/scryfall-cards/normal/front/1/a/1a667bba-ecf0-4212-8ca3-75d4db6abce2.jpg?1593862645" alt="">
+    <img id="imgmodel5" src="https://c1.scryfall.com/file/scryfall-cards/normal/front/1/e/1ee86efa-248e-4251-b734-f8ad3e8a0344.jpg?1562732370" alt="">
+    <img id="imgmodel6" src="https://c1.scryfall.com/file/scryfall-cards/normal/front/0/5/0569365d-9e50-436f-a8f3-90820ef06381.jpg?1562730830" alt="">
+    <img id="imgmodel7" src="https://c1.scryfall.com/file/scryfall-cards/large/front/3/2/32ebf9dd-2f3d-440c-9935-bb3903ca7452.jpg?1615161918" alt="">
+    <img id="imgmodel8" src="https://c1.scryfall.com/file/scryfall-cards/normal/front/0/2/02551bee-335c-4bf7-b38e-67dd71d1d567.jpg?1592485681" alt=""> #}
+</div>
+
+<div id="colors">
+    <div class="c1">text</div>
+    <div class="c2">text</div>
+    <div class="c3">text</div>
+    <div class="c4">text</div>
+    <div class="c5">text</div>
+    <div class="c6">text</div>
+    <div class="c7">text</div>
+</div>
+
+<!-- 
 <div id="cardDetailContainer">
     {# CARD INFOS #}
-    <div id="cardName">{{ card.getFaces() | map(x => "#{x.getName()}") | join(', ') }}</div>
+    <div id="cardName">{{ card.getName() }}</div>
     <div id="setContainer">
         <span>Set: </span>
         {% if card.getSet().getIconLocal() is null %}
@@ -84,5 +167,5 @@
         {% endfor %}
     </div>
 
-</div>
+</div> -->
 {% endblock %}

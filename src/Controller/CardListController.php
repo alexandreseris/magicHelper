@@ -206,6 +206,11 @@ class CardListController extends AbstractController {
                 $whereBuild->add($qb->expr()->in('color_identity.code', ':color'));
                 $whereParams['color'] = $colorFilter;
             }
+        } else {
+            $qb
+            ->join("card.color_identity", "color_identity")
+            ->join("color_identity.symbols", "symbols")
+        ;
         }
 
         $qb
@@ -227,47 +232,6 @@ class CardListController extends AbstractController {
 
         $cards = new Paginator($query, $fetchJoinCollection = true);
         $resultCardCount = count($cards);
-
-        $result = [];
-        /** @var \App\Entity\Card $card */
-        foreach ($cards as $card) {
-            $cardId = $card->getIdScryfall();
-            $setName = $card->getSet()->getName();
-            $setIcon = $card->getSet()->getIconLocal();
-
-            $rarityName = $card->getRarity()->getName();
-            $rarity = [
-                "name" => $rarityName
-            ];
-
-            $cardColors = [];
-            /** @var \App\Entity\Color $color */
-            foreach ($card->getColorIdentity() as $color) {
-                $colorName = $color->getName();
-                /** @var \App\Entity\Symbol $symbol */
-                foreach ($color->getSymbols() as $symbol) {}
-                $cardColors[] = [
-                    "name" => $colorName,
-                    "symbol" => $symbol->getIconLocal()
-                ];
-            }
-
-            $facesName = [];
-            /** @var \App\Entity\Face $face */
-            foreach ($card->getFaces() as $face) {
-                $facesName[] = $face->getName();
-            }
-            $cardName = implode(" - ", $facesName);
-
-            $result[] = [
-                "id" => $cardId,
-                "setname" => $setName,
-                "seticon" => $setIcon,
-                "rarity" => $rarity,
-                "colors" => $cardColors,
-                "name" => $cardName
-            ];
-        }
 
         $totalPagesNumber = intdiv($resultCardCount, $limit);
         if ($totalPagesNumber % $limit !== 0) {
@@ -303,7 +267,7 @@ class CardListController extends AbstractController {
                 "limit" => $limit,
                 "limitsAvailable" => $limitsAvailable,
                 "resultCardCount" => $resultCardCount,
-                "pageCardCount" => count($result),
+                "pageCardCount" => $cards->getIterator()->count(),
                 "pageNumber" => $pageNumber,
                 "pagesNavigation" => $pagesNavigation,
             ]

@@ -1,64 +1,147 @@
-#cardDetailContainer {
-    display: grid;
-    grid-template-columns: repeat(2, 2fr);
+#cardContainer * {
+  background-color: rgba(255, 255, 255, 0.8);
 }
-
+#cardContent {
+  background-color: #40474600;
+}
+#cardText,
+#cardCopyrigth {
+  font-family: 'LinLibertine', 'Times New Roman', serif;
+}
+#cardStats,
+#cardName,
+#cardTypeline,
+#cardArtist {
+  font-family: "Beleren Bold", 'LinLibertine', 'Times New Roman', serif;
+}
+#cardContainer,
+#cardBackgroundColor,
+#cardContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#cardMeta,
+#cardHeaderOutterBorder,
+#card2ndHeaderOutterBorder,
+#cardHeaderInnerShadow,
+#card2ndHeaderInnerShadow,
+#cardMana {
+  display: flex;
+  flex-direction: row;
+}
+#cardMeta,
+#cardHeaderInnerShadow,
+#card2ndHeaderInnerShadow {
+  justify-content: space-between;
+}
+#cardContainer {
+  width: 488px;
+  height: 680px;
+  background-color: black;
+  border-radius: 20px;
+  display: flex;
+}
+#cardInnerBorder {
+  width: 448px;
+  height: 640px;
+  border-radius: 10px;
+}
+#cardBackgroundColor {
+  background-image: url('/images/backgroundCard/white.jpg');
+  border-radius: 10px;
+}
+#cardContent {
+  margin-top: 12px;
+  width: 415px;
+  height: 596px;
+  justify-content: start;
+}
+#cardHeaderInnerShadow,
+#card2ndHeaderInnerShadow,
+#cardText {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+#cardHeaderOutterBorder,
+#card2ndHeaderOutterBorder {
+  height: 37px;
+  width: 435px;
+}
+#cardHeader,
+#card2ndHeader,
+#cardHeaderInnerShadow,
+#cardHeader2ndInnerShadow {
+  width: 100%;
+}
+#cardMeta {
+  margin-top: auto;
+  padding-top: 14.5px;
+  padding-bottom: 14.5px;
+}
+#cardStats {
+  width: 65px;
+  height: 30px;
+  z-index: 10;
+  position: fixed;
+  top: 607px;
+  left: 386px;
+}
+#cardImageOutterBorder,
+#cardHeaderOutterBorder,
+#card2ndHeaderOutterBorder,
+#cardTextBoxBorder {
+  border: 3px solid #f9faf9;
+}
+#cardHeader,
+#card2ndHeader,
+#cardImage {
+  border: 1px solid black;
+}
+#cardHeader,
+#card2ndHeader {
+  border-radius: 13px;
+}
+.cardManaIcon {
+  width: 21px;
+  height: 21px;
+}
+.cardSetIcon {
+  height: 29px;
+  width: auto;
+}
+#cardText {
+  font-size: 24px;
+}
 #cardName {
-    grid-column: 1 / 3;
-    text-align: center;
-    font-size: large;
-    font-weight: bold;
+  font-size: 25px;
+  font-weight: 600;
 }
-
-#setContainer, #legalitiesContainer {
-    grid-column: 2 / 2;
+#cardTypeline {
+  font-size: 20px;
+  font-weight: 600;
 }
-
-#setContainer {
-    grid-row: 3 / 3;
+#cardImage > img {
+  width: 100%;
+  height: auto;
 }
-
-#setImg {
-    width: 2rem;
-    height: auto;
+#cardMeta,
+#cardMeta * {
+  background-color: black;
+  color: white;
+  text-decoration: none;
 }
-
-#legalitiesContainer {
-    grid-row: 5 / 5;
+#cardArtist {
+  font-size: 12px;
 }
-
-#legalitiesContainer {
-    display: grid;
-    grid-template-columns: repeat(2, 2fr);
+#cardCopyrigth {
+  font-size: 10px;
 }
-
-.legalityType {
-    grid-column: 1 / 1;
-    text-align: center;
+#cardStats {
+  font-size: 24px;
+  font-weight: 600;
 }
-
-.legalityValue {
-    grid-column: 2 / 2;
-    text-align: center;
-}
-
-.arrayLabel {
-    grid-column: 1 / 3;
-    text-align: center;
-}
-
-#cardInfosContainer {
-    grid-column: 1 / 1;
-    grid-row: 5 / 5;
-}
-
-#faceContainer {
-    grid-column: 1 / 3;
-    grid-row: 6 / 6;
-}
-
-
-.faceImage {
-    object-fit: cover;
-    width: 10rem;
+#cardArtist {
+  text-transform: uppercase;
 }

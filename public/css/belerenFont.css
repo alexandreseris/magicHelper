@@ -1,0 +1,11 @@
+/* Beleren Bold */
+@font-face {
+  font-family: "Beleren Bold";
+  src:
+    url("/fonts/beleren/Beleren2016-Bold.woff") format("woff"),
+    url("/fonts/beleren/Beleren2016-Bold.ttf") format("truetype"),
+    url("/fonts/beleren/Beleren2016-Bold.svg#Beleren2016-Bold") format("svg");
+  font-style: normal;
+  font-weight: bold;
+  text-rendering: optimizeLegibility;
+}

@@ -1,0 +1,229 @@
+////////////////////////////////////////////////////////////////////////////////////////////
+// color settings
+@white: #f9faf9;
+@black: #404746;
+@blue: #5d9ad2;
+@green: #688c65;
+@red: #b83a3b;
+@multiColor: #ceb45e;
+@noColor: #acb0b6;
+
+@color: "white";
+
+@backgroundImage: '/images/backgroundCard/white.jpg';
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// size settings
+@sizeModificator: 1;
+
+// card and outer black border
+@cardHeight: 680px * @sizeModificator;
+@cardWidth: 488px * @sizeModificator;
+@cardOuterBorder: 20px * @sizeModificator;
+@cardOuterBorderRadius: 20px * @sizeModificator;
+
+// content box
+@cardContentWidth: 415px * @sizeModificator;
+@cardContentHeigth: 596px * @sizeModificator;
+@cardContentTopMargin: 12px * @sizeModificator;
+@outerBoderContent: 1px * @sizeModificator;
+
+// border
+@cardContentOutterBorder: 3px * @sizeModificator;
+@cardContentBorder: 1px * @sizeModificator;
+
+// header
+@cardHeaderHeigth: 37px * @sizeModificator;
+@cardHeaderWidth: @cardContentWidth + 20px * @sizeModificator;
+@cardHeaderRadius: 13px * @sizeModificator;
+
+// power and toughness
+@statHeigth: 30px * @sizeModificator;
+@statWidth: 65px * @sizeModificator;
+@statPositionX: 386px * @sizeModificator;
+@statPositionY: 607px * @sizeModificator;
+
+// meta
+@metaHeigth: 29px * @sizeModificator;
+
+// text and icons
+@headerSize: 25px * @sizeModificator;
+@header2ndSize: 20px * @sizeModificator;
+@manaSize: 21px * @sizeModificator;
+@setSize: 29px * @sizeModificator;
+@textSize: 24px * @sizeModificator;
+@artistSize: 12px * @sizeModificator;
+@TMSize: 10px * @sizeModificator;
+
+@textPadding: 6px * @sizeModificator;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// COLOR
+#cardContainer * {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+#cardContent {
+    background-color: #40474600;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// FONT FAMILIES
+#cardText, #cardCopyrigth {
+    font-family: 'LinLibertine', 'Times New Roman', serif;
+}
+
+#cardStats,
+#cardName,
+#cardTypeline,
+#cardArtist {
+    font-family: "Beleren Bold", 'LinLibertine', 'Times New Roman', serif;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DISPLAY
+#cardContainer, #cardBackgroundColor, #cardContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#cardMeta, #cardHeaderOutterBorder, #card2ndHeaderOutterBorder, #cardHeaderInnerShadow, #card2ndHeaderInnerShadow, #cardMana {
+    display: flex;
+    flex-direction: row;
+}
+
+#cardMeta, #cardHeaderInnerShadow, #card2ndHeaderInnerShadow {
+    justify-content: space-between;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// BOX SIZES
+#cardContainer {
+    width: @cardWidth;
+    height: @cardHeight;
+    background-color: black;
+    border-radius: @cardOuterBorderRadius;
+    display: flex;
+}
+
+#cardInnerBorder {
+    width: @cardWidth - @cardOuterBorder * 2;
+    height: @cardHeight - @cardOuterBorder * 2;
+    border-radius: (@cardOuterBorderRadius / 2);
+}
+
+#cardBackgroundColor {
+    background-image: url(@backgroundImage);
+    border-radius: (@cardOuterBorderRadius / 2);
+}
+
+#cardContent {
+    margin-top: @cardContentTopMargin;
+    width: @cardContentWidth;
+    height: @cardContentHeigth;
+    justify-content: start;
+}
+
+#cardHeaderInnerShadow, #card2ndHeaderInnerShadow, #cardText {
+    padding-left: @textPadding;
+    padding-right: @textPadding;
+}
+
+#cardHeaderOutterBorder, #card2ndHeaderOutterBorder {
+    height: @cardHeaderHeigth;
+    width: @cardHeaderWidth;
+}
+
+#cardHeader, #card2ndHeader,
+#cardHeaderInnerShadow, #cardHeader2ndInnerShadow
+{
+    width: 100%;
+}
+
+#cardMeta {
+    margin-top: auto;
+    padding-top: (@metaHeigth / 2);
+    padding-bottom: (@metaHeigth / 2);
+}
+
+#cardStats {
+    width: @statWidth;
+    height: @statHeigth;
+    z-index: 10;
+    position: fixed;
+    top: @statPositionY;
+    left: @statPositionX;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// BORDER
+#cardImageOutterBorder, #cardHeaderOutterBorder, #card2ndHeaderOutterBorder, #cardTextBoxBorder {
+    border: @cardContentOutterBorder solid @@color;
+}
+
+#cardHeader, #card2ndHeader, #cardImage {
+    border: @cardContentBorder solid black;
+}
+
+#cardHeader, #card2ndHeader {
+    border-radius: @cardHeaderRadius;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// SHADOW
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// CONTENT SETTINGS
+.cardManaIcon {
+    width: @manaSize;
+    height: @manaSize;
+}
+.cardSetIcon {
+    height: @setSize;
+    width: auto;
+}
+
+#cardText {
+    font-size: @textSize;
+}
+
+#cardName {
+    font-size: @headerSize;
+    font-weight: 600;
+}
+
+#cardTypeline {
+    font-size: @header2ndSize;
+    font-weight: 600;
+}
+
+#cardImage > img {
+    width: 100%;
+    height: auto;
+}
+
+#cardMeta, #cardMeta * {
+    background-color: black;
+    color: white;
+    text-decoration: none;
+}
+
+#cardArtist {
+    font-size: @artistSize;
+}
+
+#cardCopyrigth {
+    font-size: @TMSize;
+}
+
+#cardStats {
+    font-size: @textSize;
+    font-weight: 600;
+}
+
+#cardArtist {
+    text-transform: uppercase;
+}
